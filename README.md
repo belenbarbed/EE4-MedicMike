@@ -12,4 +12,4 @@ HCR Coursework 2018
 - New code / assests are created in dev branches.
 - A merge request is then opened to merge the dev branch into the integration branch.
 - The integration branch is tested and evaluated.
-- If testing is successful then the integration branch is merged into master.
+- If testing is successful then the integration branch is merged into master and the issue is closed.
