@@ -7,7 +7,7 @@ HCR Coursework 2018
 - 13/12: Final Demo
 - 20/12: Final Report
 
-## WorFlow
+## Workflow
 - New work (features, bug fixes etc.) begins life as an issue (e.g. implement time prediction for pick ups, fix mistaken identity bug).
 - New code / assests are created in dev branches.
 - A merge request is then opened to merge the dev branch into the integration branch.
