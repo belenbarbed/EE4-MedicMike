@@ -6,6 +6,6 @@ then
   #Pull and overwrite database
   git fetch
   git pull
-  mysqldump -u root -proot < ~/Documents/University/Fourth_Year/HCR/EE4-PostBotPat/Database/dbs.sql
+  mysqldump -u root -proot < ../Database/dbs.sql
   echo "Done"
 fi
