@@ -79,7 +79,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1087764,NULL,'Owen','Harcombe','oh1015@ic.ac.uk','EEE');
+INSERT INTO `users` VALUES (1087764,NULL,'Owen','Harcombe','oh1015@ic.ac.uk','EEE'),(1088571,NULL,'George','Padley','gp2015@ic.ac.uk','EEE');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1004,4 +1004,4 @@ CREATE TABLE IF NOT EXISTS `slow_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-06 17:23:16
+-- Dump completed on 2018-11-06 17:32:46

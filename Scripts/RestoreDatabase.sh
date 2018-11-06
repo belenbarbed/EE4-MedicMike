@@ -9,6 +9,6 @@ then
   #Pull and overwrite database
   git fetch
   git pull
-  mysqldump -u root -p Baxter< ../Database/dbs.sql
+  mysql -u root -p Baxter< ../Database/dbs.sql
   echo "Done"
 fi
