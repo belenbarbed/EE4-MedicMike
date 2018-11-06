@@ -16,6 +16,74 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Current Database: `Baxter`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Baxter` /*!40100 DEFAULT CHARACTER SET latin1 */;
+
+USE `Baxter`;
+
+--
+-- Table structure for table `packages`
+--
+
+DROP TABLE IF EXISTS `packages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `packages` (
+  `PackageID` int(11) NOT NULL AUTO_INCREMENT,
+  `CollegeID` int(11) DEFAULT NULL,
+  `Address` varchar(255) DEFAULT NULL,
+  `ParcelLocation` int(11) DEFAULT NULL,
+  `ArrivalDate` date DEFAULT NULL,
+  `ArrivalTime` time DEFAULT NULL,
+  `Notified` bit(1) DEFAULT b'0',
+  `CollectionDate` date DEFAULT NULL,
+  `CollectionTime` time DEFAULT NULL,
+  PRIMARY KEY (`PackageID`),
+  KEY `CollegeID` (`CollegeID`),
+  CONSTRAINT `packages_ibfk_1` FOREIGN KEY (`CollegeID`) REFERENCES `users` (`CollegeID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `packages`
+--
+
+LOCK TABLES `packages` WRITE;
+/*!40000 ALTER TABLE `packages` DISABLE KEYS */;
+/*!40000 ALTER TABLE `packages` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `users` (
+  `CollegeID` int(11) NOT NULL,
+  `CollegeCardID` varchar(255) DEFAULT NULL,
+  `FirstName` varchar(255) DEFAULT NULL,
+  `Surname` varchar(255) DEFAULT NULL,
+  `Email` varchar(255) DEFAULT NULL,
+  `Department` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`CollegeID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1087764,NULL,'Owen','Harcombe','oh1015@ic.ac.uk','EEE');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Current Database: `mysql`
 --
 
@@ -337,7 +405,7 @@ CREATE TABLE `innodb_index_stats` (
 
 LOCK TABLES `innodb_index_stats` WRITE;
 /*!40000 ALTER TABLE `innodb_index_stats` DISABLE KEYS */;
-INSERT INTO `innodb_index_stats` VALUES ('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx01',0,1,'source_uuid'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx02',0,1,'source_uuid,interval_start'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','size',1,NULL,'Number of pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_diff_pfx01',6,1,'variable'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','size',1,NULL,'Number of pages in the index');
+INSERT INTO `innodb_index_stats` VALUES ('Baxter','packages','CollegeID','2018-11-06 17:14:43','n_diff_pfx01',0,1,'CollegeID'),('Baxter','packages','CollegeID','2018-11-06 17:14:43','n_diff_pfx02',0,1,'CollegeID,PackageID'),('Baxter','packages','CollegeID','2018-11-06 17:14:43','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','packages','CollegeID','2018-11-06 17:14:43','size',1,NULL,'Number of pages in the index'),('Baxter','packages','PRIMARY','2018-11-06 17:14:43','n_diff_pfx01',0,1,'PackageID'),('Baxter','packages','PRIMARY','2018-11-06 17:14:43','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','packages','PRIMARY','2018-11-06 17:14:43','size',1,NULL,'Number of pages in the index'),('Baxter','users','PRIMARY','2018-11-06 17:08:29','n_diff_pfx01',0,1,'CollegeID'),('Baxter','users','PRIMARY','2018-11-06 17:08:29','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','users','PRIMARY','2018-11-06 17:08:29','size',1,NULL,'Number of pages in the index'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx01',0,1,'source_uuid'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx02',0,1,'source_uuid,interval_start'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','size',1,NULL,'Number of pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_diff_pfx01',6,1,'variable'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','size',1,NULL,'Number of pages in the index');
 /*!40000 ALTER TABLE `innodb_index_stats` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -365,7 +433,7 @@ CREATE TABLE `innodb_table_stats` (
 
 LOCK TABLES `innodb_table_stats` WRITE;
 /*!40000 ALTER TABLE `innodb_table_stats` DISABLE KEYS */;
-INSERT INTO `innodb_table_stats` VALUES ('mysql','gtid_executed','2018-11-01 14:40:49',0,1,0),('sys','sys_config','2018-11-01 14:40:50',6,1,0);
+INSERT INTO `innodb_table_stats` VALUES ('Baxter','packages','2018-11-06 17:14:43',0,1,1),('Baxter','users','2018-11-06 17:08:29',0,1,0),('mysql','gtid_executed','2018-11-01 14:40:49',0,1,0),('sys','sys_config','2018-11-01 14:40:50',6,1,0);
 /*!40000 ALTER TABLE `innodb_table_stats` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -936,4 +1004,4 @@ CREATE TABLE IF NOT EXISTS `slow_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-06 16:20:40
+-- Dump completed on 2018-11-06 17:23:16
