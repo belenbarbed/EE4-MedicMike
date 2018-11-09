@@ -124,3 +124,29 @@ Namespaces are very useful indeed. They can be used to separate code and make na
 
 
 
+=======
+## How to run the Baxter simulation
+
+In 2 terminal tabs, run:
+```
+cd ~/ros_ws
+
+./baxter.sh sim
+```
+
+In the 1st tab, run:
+```
+roslaunch baxter_gazebo baxter_world.launch
+```
+
+The gazebo terminal window should open with the robot in the world.
+
+Then, in the 2nd terminal tab:
+```
+rosrun baxter_tools enable_robot.py -e
+```
+
+You can now run python scripts to move Baxter and see it in the gazebo simulator. For example:
+```
+rosrun baxter_tools tuck_arms.py -t
+``
