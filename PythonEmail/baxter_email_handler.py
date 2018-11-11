@@ -1,7 +1,12 @@
 import smtplib
 import imaplib
 import email
+import time
+import re
 import baxter_database
+
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 class BaxterEmailHandler:
     def __init__(self):
@@ -26,23 +31,28 @@ class BaxterEmailHandler:
     def __fetch_emails(self, id_list):
         #print len(id_list)
         new_requests = []
-        for i in range(int(id_list[0]), int(id_list[-1]) + 1, 1):
-            type, data = self.imap_server_ssl.fetch(i, '(RFC822)')
-            for response_part in data:
-                if isinstance(response_part, tuple):
-                    msg = email.message_from_string(response_part[1])
-                    new_requests.append(msg['from'])
+        if(len(id_list) > 0):
+            for i in range(int(id_list[0]), int(id_list[-1]) + 1, 1):
+                type, data = self.imap_server_ssl.fetch(i, '(RFC822)')
+                for response_part in data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_string(response_part[1])
+                        stripped_emails = re.findall(r"<(.*?)>", msg['from'])
+                        new_requests.append(stripped_emails[0])
+                self.imap_server_ssl.store(i,'+FLAGS', '\Seen')
         return new_requests
 
     def check_for_new_mail(self):
         self.__connect_to_imap_server()
         new_requests = self.__fetch_emails(self.__get_mail_ids())
-        self.imap_server_ssl.quit()
+        self.imap_server_ssl.close()
+        self.imap_server_ssl.logout()
         return new_requests
 
     def send_email(self, name, email, number_packages):
         self.__connect_to_smtp_server()
         msg = MIMEMultipart()
+        print(email)
         msg['From'] = self.gmail_user
         msg['To'] = email
         msg['Subject'] = "Packages ready for collection"
@@ -57,5 +67,6 @@ class BaxterEmailHandler:
 
         msg.attach(MIMEText(body, 'plain'))
         text = msg.as_string()
-        self.smtp_server_ssl.sendmail(gmail_user, email, text)
+        self.smtp_server_ssl.sendmail(self.gmail_user, email, text)
+        time.sleep(1)
         self.smtp_server_ssl.quit()
