@@ -24,23 +24,26 @@ class BaxterSqlDatabase:
     def add_arrived_package(self, CIDNumber, Address):
         self.mycursor.execute("SELECT ParcelLocation FROM packages WHERE CollectionDate IS NULL;")
         used_slots = self.mycursor.fetchall()
+        used_slots = [i[0] for i in used_slots]
         for x in range(1, NumberSlots + 1):
             if x not in used_slots:
                 Time = datetime.datetime.now()
                 ArrivalDate = Time.strftime("%Y-%m-%d")
                 ArrivalTime = Time.strftime("%H:%M:%S")
-                self.mycursor.execute("INSERT INTO packages (CollegeID, Address, ParcelLocation, ArrivalDate, ArrivalTime) VALUES (%d,'%s',%d,'%s','%s');" % (CIDNumber, Address, x, ArrivalDate, ArrivalTime,))
+                self.mycursor.execute("INSERT INTO packages VALUES (NULL, %d,'%s',%d,'%s','%s', b'0', NULL, NULL);" % (CIDNumber, Address, x, ArrivalDate, ArrivalTime,))
+                self.mydb.commit()
                 return x
 
     def find_package_slot(self, CIDNumber):
-        self.mycursor.execute("SELECT ParcelLocation from packages WHERE CollegeID = %d AND CollectionDate IS NOT NULL;" %(CIDNumber,))
-        return self.mycursor.fetchall()
+        print CIDNumber
+        self.mycursor.execute("SELECT ParcelLocation from packages WHERE CollegeID = %d AND CollectionDate IS NULL;" % (CIDNumber,)) # TODO: What if no package is found
+        return self.mycursor.fetchall()[0][0]
 
     def update_collected_package(self, CIDNumber, PackageSlot):
         Time = datetime.datetime.now()
         CollectionDate = Time.strftime("%Y-%m-%d")
         CollectionTime = Time.strftime("%H:%M:%S")
-        self.mycursor.execute("UPDATE packages SET CollectionDate = '%s', CollectionTime = '%s' WHERE CollegeID = &d AND ParcelLocation = %d;" %(CollectionDate, CollectionTime, CIDNumber, PackageSlot,))
+        self.mycursor.execute("UPDATE packages SET CollectionDate = '%s', CollectionTime = '%s' WHERE CollegeID = %d AND ParcelLocation = %d;" %(CollectionDate, CollectionTime, CIDNumber, PackageSlot,))
 
     def update_notification_state(self, CIDNumber, PackageSlot, Notified):
         self.mycursor.execute("UPDATE packages SET Notified = b'%s' WHERE CollegeID = %d AND ParcelLocation = %d AND CollectionDate IS NOT NULL;" %(Notified, CIDNumber, PackageSlot,))
@@ -49,3 +52,7 @@ class BaxterSqlDatabase:
         self.mycursor.execute("SELECT FirstName, Surname FROM users WHERE CollegeID = %d OR Email = '%s';" %(CIDNumber, email,))
         names = self.mycursor.fetchall()
         return names[0][0] + " " + names[0][1]
+
+    def find_person_email(self, CIDNumber):
+        self.mycursor.execute("SELECT Email FROM users WHERE CollegeID = %d;" %(CIDNumber,))
+        return self.mycursor.fetchall()[0][0]

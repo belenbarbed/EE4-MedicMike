@@ -4,6 +4,10 @@ import baxter_database, baxter_email_handler
 from post_bot_pat.msg import PackageInfoIn
 from post_bot_pat.msg import PackageInfoOut
 
+## TODO: - Update Collection Time and Date on feedback
+#        - Check what happens when no package is found
+#        - Test to see if messages are being quarantined by Imperial!
+
 class BaxterPackageDB:
     def __init__(self):
         self.baxter_db = baxter_database.BaxterSqlDatabase('localhost', 'root', 'root','Baxter')
@@ -11,33 +15,33 @@ class BaxterPackageDB:
         rospy.init_node('Database', anonymous=True)
         rospy.Subscriber("DBChannel_In", PackageInfoIn, self.__callback)
         self.pub = rospy.Publisher("DBChannel_Out", PackageInfoOut, queue_size=10)
-        #rospy.init_node('talker', anonymous=True)
 
     def alert_listener(self):
         rospy.spin()
 
     def __callback(self, data):
-        CIDNumber = PackageInfoIn.CIDNumber
-        Address = PackageInfoIn.Address
-        Store = PackageInfoIn.Store
+        CIDNumber = data.CIDNumber
+        Address = data.Address
+        Store = data.Store
         if(Store == True):
-            package_location = add_package_to_database(CIDNumber, Address)
+            package_location = self.__add_package_to_database(CIDNumber, Address)
             name = self.baxter_db.find_person_name(CIDNumber = CIDNumber)
+            email = self.baxter_db.find_person_email(CIDNumber)
             self.baxter_email.send_email(name, email, 1)
             name = self.baxter_db.update_notification_state(CIDNumber, package_location, 1)
         else:
-            package_location = retrieve_package_from_database(CIDNumber)
-        publish_location_info(package_location, Store)
+            package_location = self.__retrieve_package_from_database(CIDNumber)
+        self.__publish_location_info(package_location, Store)
 
-    def add_package_to_database(self, CIDNumber, Address):
+    def __add_package_to_database(self, CIDNumber, Address):
         package_location = self.baxter_db.add_arrived_package(CIDNumber, Address)
         return package_location
 
-    def retrieve_package_from_database(self, CIDNumber):
+    def __retrieve_package_from_database(self, CIDNumber):
         package_location = self.baxter_db.find_package_slot(CIDNumber)
         return package_location
 
-    def publish_location_info(self, Location, Store):
+    def __publish_location_info(self, Location, Store):
         msg = PackageInfoOut()
         msg.PackageLocation = Location
         msg.Store = Store
