@@ -1,9 +1,11 @@
 import smtplib
 import imaplib
 import email
+import baxter_database
 
-class Email:
+class BaxterEmailHandler:
     def __init__(self):
+            self.baxter_db = baxter_database.BaxterSqlDatabase('localhost', 'root', 'root','Baxter')
             self.gmail_user = 'PostBotPat@gmail.com'
             self.gmail_password = 'Baxter2018'
 
@@ -18,14 +20,13 @@ class Email:
         self.imap_server_ssl.select('inbox')
 
     def get_mail_ids(self):
-        type, data = self.imap_server_ssl.search(None, 'ALL')
+        type, data = self.imap_server_ssl.search(None, '(UNSEEN)')
         mail_ids = data[0]
         return mail_ids.split()
 
-
     def fetch_emails(self, id_list):
         print len(id_list)
-        for i in range(int(id_list[0]), int(id_list[-1]), 1):
+        for i in range(int(id_list[0]), int(id_list[-1]) + 1, 1):
             type, data = self.imap_server_ssl.fetch(i, '(RFC822)')
             for response_part in data:
                 if isinstance(response_part, tuple):
@@ -36,10 +37,7 @@ class Email:
                     print 'Subject : ' + email_subject + '\n'
 
 
+
     def check_for_new_mail(self):
         self.connect_to_imap_server()
         self.fetch_emails(self.get_mail_ids())
-
-
-email = Email()
-email.check_for_new_mail()
