@@ -38,6 +38,10 @@ class BaxterEmailHandler:
 
 
 
+
     def check_for_new_mail(self):
         self.connect_to_imap_server()
         self.fetch_emails(self.get_mail_ids())
+
+
+# Pass database instance in for when checking for mail
