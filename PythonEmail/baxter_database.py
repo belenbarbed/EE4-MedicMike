@@ -41,3 +41,11 @@ class BaxterSqlDatabase:
         CollectionDate = Time.strftime("%Y-%m-%d")
         CollectionTime = Time.strftime("%H:%M:%S")
         self.mydbcursor.execute("UPDATE packages SET CollectionDate = '%s', CollectionTime = '%s' WHERE CollegeID = &d AND ParcelLocation = %d;" %(CollectionDate, CollectionTime, CIDNumber, PackageSlot,))
+
+    def update_notification_state(self, CIDNumber, PackageSlot, Notified):
+        self.mydbcursor.execute("UPDATE packages SET Notified = b'%s' WHERE CollegeID = %d AND ParcelLocation = %d AND CollectionDate IS NOT NULL;" %(Notified, CIDNumber, PackageSlot,))
+
+    def find_person_name(self, CIDNumber, email):
+        self.mydbcursor.execute("SELECT FirstName, Surname FROM users WHERE CollegeID = %d OR Email = %s;" %(CIDNumber, email,))
+        names = self.mycursor.fetchall()
+        return names[0] + " " + names[1]

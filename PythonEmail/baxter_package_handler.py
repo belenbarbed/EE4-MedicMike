@@ -13,7 +13,7 @@ class BaxterPackageDB:
         self.pub = rospy.Publsiher("DBChannel", PackageInfoOut, queue_size=10)
         rospy.init_node('talker', anonymous=True)
 
-    def listen_for_alerts(self):
+    def alert_listener(self):
         rospy.spin()
 
     def callback(self, data):
@@ -22,7 +22,9 @@ class BaxterPackageDB:
         Store = PackageInfoIn.Store
         if(Store == True):
             package_location = add_package_to_database(CIDNumber, Address)
-            # Send email alerting of arival
+            name = self.baxter_db.find_person_name(CIDNumber = CIDNumber)
+            self.baxter_email.send_email(name, email, 1)
+            name = self.baxter_db.update_notification_state(CIDNumber, package_location, 1)
         else:
             package_location = retrieve_package_from_database(CIDNumber)
         publish_location_info(package_location, Store)
@@ -42,6 +44,16 @@ class BaxterPackageDB:
         rospy.loginfo(msg)
         self.pub.publish(msg)
 
+    def email_listener(self):
+        mail_requests = self.baxter_email.check_for_new_mail()
+        for email in mail_requests: # Iterate through all email addresses, find the number of waiting packages and send an email to each person
+            number_packages = self.baxter_db.get_number_waiting_packages(email)
+            name = self.baxter_db.find_person_name(email = email)
+            self.baxter_email.send_email(name, email, number_packages)
+        time.sleep(600)
 
+# Create instance and run email and alert in seperate threads
 
-# baxter_email.check_for_new_mail()
+baxter_package_db = BaxterPackageDB()
+thread.start_new_thread(baxter_package_db.email_listener())
+thread.start_new_thread(baxter_package_db.alert_listener())
