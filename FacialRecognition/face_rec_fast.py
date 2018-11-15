@@ -1,6 +1,7 @@
 import sys
 sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import face_recognition
+import pickle
 import cv2
 from os import listdir
 # This is a demo of running face recognition on live video from your webcam. It's a little more complicated than the
@@ -13,6 +14,8 @@ from os import listdir
 # specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
 
 # Get a reference to webcam #0 (the default one)
+face_name = 'face_name.pkl'
+face_enc = 'face_enc.pkl'
 video_capture = cv2.VideoCapture(0)
 def face_rec_learn():
     images = listdir("known_people")
@@ -23,9 +26,20 @@ def face_rec_learn():
         filename = 'known_people/' + filename
         image_file = face_recognition.load_image_file(filename)
         known_face_encodings.append(face_recognition.face_encodings(image_file)[0])
+    with open(face_name, "wb") as fp:
+        pickle.dump(known_face_names, fp)
+    with open(face_enc, "wb") as fp:
+        pickle.dump(known_face_encodings, fp)
     return known_face_names, known_face_encodings
 
-known_face_names, known_face_encodings = face_rec_learn()
+with open(face_name, "rb") as fp:
+    known_face_names = pickle.load(fp)
+if len(known_face_names) != len(listdir("known_people")):
+    known_face_names, known_face_encodings = face_rec_learn()
+else:
+    with open(face_enc, "rb") as fp:
+        known_face_encodings = pickle.load(fp)
+
 # Create arrays of known face encodings and their names
 
 
