@@ -20,6 +20,101 @@ HCR Coursework 2018
 - The integration branch is tested and evaluated.
 - If testing is successful then the integration branch is merged into master and the issue is closed.
 
+## Directory Structure
+
+```
+~/ros_ws
+    baxter.sh
+    build/
+    devel/
+    src/                 => GIT REPO
+        .gitignore
+        README.md
+        CV/
+            externalpck1/
+            alexpkg/
+            georgepkg/
+        movement/
+            belenpkg/
+            omarpkg/
+        ...
+```
+
+## How to install
+
+1. Run our setup.sh script to set up the Baxter workspace:
+```
+chmod +x ./setup.sh
+./setup.sh
+```
+In the 2 cases when vim opens, change the following lines:
+```
+baxter_hostname="something.local"
+```
+to
+```
+baxter_hostname="011401P0008.local"
+```
+and
+```
+your_ip="192.168.XXX.XXX"
+```
+to have your computer's IP address
+
+and
+```
+ros_version="indigo"
+```
+to
+```
+ros_version="kinetic"
+```
+
+2. Run our setup2.sh script to set up the repo and shizzle:
+```
+chmod +x ./setup2.sh
+./setup2.sh
+```
+
+## Running the Baxter simulator
+
+In 2 terminal tabs, run:
+```
+cd ~/ros_ws
+./baxter.sh sim
+```
+In the 1st tab, run:
+```
+roslaunch baxter_gazebo baxter_world.launch
+```
+The gazebo terminal window should open with the robot in the world.
+
+Then, in the 2nd terminal tab:
+```
+rosrun baxter_tools enable_robot.py -e
+```
+You can now run python scripts in the 2nd terminal to move Baxter and see it in the gazebo simulator. For example:
+```
+rosrun baxter_tools tuck_arms.py -t
+```
+
+## Making changes
+
+Firstly, make sure you're on your personal dev branch, by using:
+
+```
+git checkout your_branch
+```
+When you've added a new package or modified an existing one and want to commit, make sure you do all the following:
+```
+git add .
+git commit -m "some helpful message"
+git pull origin your_branch
+catkin_make
+git push origin your_branch
+```
+In general, every time you ```git pull```, make sure you ```catkin_make``` afterwards. This ensures any new packages someone else created/importted are listed in the dependencies for the workspace.
+
 ## Code Style Guide
 
 Writing good code is a good thing. Pat needs good code, otherwise he probably won't function properly. Here are some things that are good practice to adhere too- don't just do it for yourself, do it for Pat.
@@ -110,43 +205,3 @@ etc
 ### Namespaces 
 
 Namespaces are very useful indeed. They can be used to separate code and make names explicit. I'd recommend using them, but it's not the end of the world if we don't.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
-## How to run the Baxter simulation
-
-In 2 terminal tabs, run:
-```
-cd ~/ros_ws
-
-./baxter.sh sim
-```
-
-In the 1st tab, run:
-```
-roslaunch baxter_gazebo baxter_world.launch
-```
-
-The gazebo terminal window should open with the robot in the world.
-
-Then, in the 2nd terminal tab:
-```
-rosrun baxter_tools enable_robot.py -e
-```
-
-You can now run python scripts to move Baxter and see it in the gazebo simulator. For example:
-```
-rosrun baxter_tools tuck_arms.py -t
-``
