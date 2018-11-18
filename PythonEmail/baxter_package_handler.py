@@ -4,10 +4,6 @@ import baxter_database, baxter_email_handler
 from post_bot_pat.msg import PackageInfoIn
 from post_bot_pat.msg import PackageInfoOut
 
-## TODO: - Update Collection Time and Date on feedback
-#        - Check what happens when no package is found
-#        - Test to see if messages are being quarantined by Imperial!
-
 class BaxterPackageDB:
     def __init__(self):
         self.baxter_db = baxter_database.BaxterSqlDatabase('localhost', 'root', 'root','Baxter')
@@ -15,6 +11,7 @@ class BaxterPackageDB:
         rospy.init_node('Database', anonymous=True)
         rospy.Subscriber("DBChannel_In", PackageInfoIn, self.__callback)
         self.pub = rospy.Publisher("DBChannel_Out", PackageInfoOut, queue_size=10)
+        #rospy.init_node('talker', anonymous=True)
 
     def alert_listener(self):
         rospy.spin()
