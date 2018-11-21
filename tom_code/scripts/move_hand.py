@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Baxter RSDK Inverse Kinematics Example
 """
@@ -81,6 +83,8 @@ def move_to_pos(xin,yin,zin):
     print "move complete"
 
 def main():
+    rospy.loginfo("Initializing node... ")
+    rospy.init_node("tom_code_test")
     rospy.loginfo("Initializing node... ")
     move_to_pos(0.8, -0.95, 0.6)
     rospy.loginfo("Finished move_hand")
