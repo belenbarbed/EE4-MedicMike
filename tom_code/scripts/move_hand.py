@@ -82,12 +82,58 @@ def move_to_pos(xin,yin,zin):
     arm.move_to_joint_positions(base_pos)
     print "move complete"
 
+def arm_move_to_pos(xin,yin,zin,arm):
+    hdr = Header(stamp=rospy.Time.now(), frame_id='base')
+    quater = Quaternion(
+                    x=0.707,
+                    y=0.0,
+                    z=0.707,
+                    w=0.0,
+                )
+
+    base_pose = PoseStamped(
+            header=hdr,
+            pose=Pose(
+                position=Point(
+                    x=xin,#0.8,
+                    y=yin,#-0.95,
+                    z=zin,#.6,
+                ),
+                orientation=quater
+            ),
+        )
+    base_pos = get_ik(base_pose, arm)
+    arm = baxter_interface.Limb(arm)
+    arm.move_to_joint_positions(base_pos)
+    print "move complete"
+
 def main():
+
+    # EXAMPLE CALL
+    # rosrun tom_code move_hand.py -c 0.8 0.8 0.8 -l
+
+    parser = argparse.ArgumentParser(description='Process the x y z coordinates')
+
+    parser.add_argument('-c', type=float, nargs='+',
+        help='the x y z coordinates')
+    parser.add_argument('-l', default=False, action='store_true', dest='left',
+        help='move the left arm')
+    parser.add_argument('-r', default=False, action='store_true', dest='right',
+        help='move the right arm')
+
+    args = parser.parse_args()
+
     rospy.loginfo("Initializing node... ")
     rospy.init_node("tom_code_test")
     rospy.loginfo("Initializing node... ")
-    move_to_pos(0.8, -0.95, 0.6)
+
+    if(args.right):
+        arm_move_to_pos(args.c[0], args.c[1], args.c[2], 'right')
+    else:
+        arm_move_to_pos(args.c[0], args.c[1], args.c[2], 'left')
+
     rospy.loginfo("Finished move_hand")
 
 if __name__ == "__main__":
     main()
+
