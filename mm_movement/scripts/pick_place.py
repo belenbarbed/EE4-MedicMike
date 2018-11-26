@@ -57,7 +57,7 @@ def get_ik(pose, limb):
         print("INVALID POSE - No Valid Joint Solution Found.")
         return None
 
-def move_to_pos(xin,yin,zin):
+def arm_move_to_pos(xin,yin,zin,arm,orientationin):
     hdr = Header(stamp=rospy.Time.now(), frame_id='base')
     quater = Quaternion(
                     x=0.707,
@@ -70,36 +70,11 @@ def move_to_pos(xin,yin,zin):
             header=hdr,
             pose=Pose(
                 position=Point(
-                    x=xin,#0.8,
-                    y=yin,#-0.95,
-                    z=zin,#.6,
+                    x=xin,
+                    y=yin,
+                    z=zin,
                 ),
-                orientation=quater
-            ),
-        )
-    base_pos = get_ik(base_pose, 'right')
-    arm = baxter_interface.Limb('right')
-    arm.move_to_joint_positions(base_pos)
-    print "move complete"
-
-def arm_move_to_pos(xin,yin,zin,arm):
-    hdr = Header(stamp=rospy.Time.now(), frame_id='base')
-    quater = Quaternion(
-                    x=0.707,
-                    y=0.0,
-                    z=0.707,
-                    w=0.0,
-                )
-
-    base_pose = PoseStamped(
-            header=hdr,
-            pose=Pose(
-                position=Point(
-                    x=xin,#0.8,
-                    y=yin,#-0.95,
-                    z=zin,#.6,
-                ),
-                orientation=quater
+                orientation=orientationin
             ),
         )
     base_pos = get_ik(base_pose, arm)
@@ -110,27 +85,48 @@ def arm_move_to_pos(xin,yin,zin,arm):
 def main():
 
     # EXAMPLE CALL
-    # rosrun tom_code move_hand.py -c 0.8 0.8 0.8 -l
+    # rosrun tom_code move_hand.py -p 0.76 0.14 0.09 -left -vert
 
     parser = argparse.ArgumentParser(description='Process the x y z coordinates')
 
-    parser.add_argument('-c', type=float, nargs='+',
-        help='the x y z coordinates')
-    parser.add_argument('-l', default=False, action='store_true', dest='left',
+    parser.add_argument('-p', type=float, nargs='+',
+        help='the x y z coordinates for arm position')
+
+    parser.add_argument('-left', default=False, action='store_true', dest='left',
         help='move the left arm')
-    parser.add_argument('-r', default=False, action='store_true', dest='right',
+    parser.add_argument('-right', default=False, action='store_true', dest='right',
         help='move the right arm')
+        
+    parser.add_argument('-vert', default=False, action='store_true', dest='vertical',
+        help='hand to finish in vertical orientation')
+    parser.add_argument('-horz', default=False, action='store_true', dest='horizontal',
+        help='hand to finish in horizontal orientation')
 
     args = parser.parse_args()
 
     rospy.loginfo("Initializing node... ")
-    rospy.init_node("tom_code_test")
+    rospy.init_node("pick_and_place")
     rospy.loginfo("Initializing node... ")
 
+    arm = 'left'
+    orientation = Quaternion(
+                    x = 0.57,
+                    y = -0.56,
+                    z = -0.45,
+                    w = -0.40,
+                )
+
     if(args.right):
-        arm_move_to_pos(args.c[0], args.c[1], args.c[2], 'right')
-    else:
-        arm_move_to_pos(args.c[0], args.c[1], args.c[2], 'left')
+        arm = 'right'
+    if(args.vertical):
+        orientation = Quaternion(
+                    x=0.00,
+                    y=0.99,
+                    z=0.03,
+                    w=0.00,
+                )
+        
+    arm_move_to_pos(args.p[0], args.p[1], args.p[2], arm, orientation)
 
     rospy.loginfo("Finished move_hand")
 
