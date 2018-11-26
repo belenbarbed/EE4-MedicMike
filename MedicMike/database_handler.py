@@ -20,20 +20,22 @@ class BaxterSqlDatabase:
     def find_patient_name(self, patient_NHS_number):
         self.mycursor.execute("SELECT FirstName, Surname FROM Patients WHERE PatientNHSNumber = %d;" %(patient_NHS_number,))
         names = self.mycursor.fetchall()
+        if(len(names) == 0):
+            return False
         return names[0][0] + " " + names[0][1]
 
-    def add_new_prescription(self, prescription_information):
-        repeat = "b'0'"
-        if(prescription_information[7] == "Y"):
-            repeat = "b'1'"
-        self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', %d, '%s', %d, '%s');" %(prescription_information[1], prescription_information[2], prescription_information[3], prescription_information[4], prescription_information[5], prescription_information[6], repeat, ))
+    def add_new_prescription(self, patient_NHS_number, prescription_information):
+        if(prescription_information.RepeatPrescription == 'Y' or prescription_information.RepeatPrescription == 'y'):
+            self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', %d, '%s', %d, b'1', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, prescription_information.TimesPerDay, prescription_information.StartDate, prescription_information.Duration,))
+        else:
+            self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', %d, '%s', %d, b'0', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, prescription_information.TimesPerDay, prescription_information.StartDate, prescription_information.Duration,))
         self.mydb.commit()
 
     def find_medicine_info(self, patient_NHS_number):
-        self.mycursor.execute("SELECT Medicines.MedicineName, RowNumber, ColumnNumber FROM Medicines RIGHT JOIN Prescriptions ON Medicines.MedicineName = Prescriptions.MedicineName WHERE Prescriptions.PatientNHSNumber = %d AND (Prescriptions.CollectionDate IS NOT NULL OR (Prescriptions.RepeatPrescription = b'1' AND CURDATE() > DATE_ADD(Prescriptions.CollectionDate, INTERVAL (Prescriptions.Duration-1) DAY)));" %(patient_NHS_number,))
-        if(len(self.mycursor.fetchall()) > 0):
-            print self.mycursor.fetchall()[0]
-            return self.mycursor.fetchall()[0]
+        self.mycursor.execute("SELECT Medicines.MedicineName, RowNumber, ColumnNumber FROM Medicines RIGHT JOIN Prescriptions ON Medicines.MedicineName = Prescriptions.MedicineName WHERE Prescriptions.PatientNHSNumber = %d AND (Prescriptions.CollectionDate IS NULL OR (Prescriptions.RepeatPrescription = b'1' AND CURDATE() > DATE_ADD(Prescriptions.CollectionDate, INTERVAL (Prescriptions.Duration-1) DAY)));" %(patient_NHS_number,))
+        result = self.mycursor.fetchall()
+        if(len(result) > 0):
+            return result[0]
         return False
 
     def update_collected_medicine(self, medicine_name, patient_NHS_number):
@@ -41,7 +43,10 @@ class BaxterSqlDatabase:
         self.mycursor.execute("UPDATE Prescriptions SET CollectionDate = '%s' WHERE MedicineName = '%s' and PatientNHSNumber = %d;" %(Time, medicine_name, patient_NHS_number,))
 
     def add_patient_to_database(self, patient_details):
-        self.mycursor.execute("INSERT INTO Patients VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', '%s');" %(patient_details["NHSNumber"], patient_details["DoctorID"], patient_details["FirstName"], patient_details["Surname"], patient_details["DoB"], patient_details["Email"], patient_details["Address"], patient_details["Discount"], ))
+        if(patient_details["Discount"] == 'Y' or patient_details["Discount"] == 'y'):
+            self.mycursor.execute("INSERT INTO Patients VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', b'1');" %(patient_details["NHSNumber"], patient_details["DoctorID"], patient_details["FirstName"], patient_details["Surname"], patient_details["DoB"], patient_details["Email"], patient_details["Address"],))
+        else:
+            self.mycursor.execute("INSERT INTO Patients VALUES (%d, %d, '%s', '%s', '%s', '%s', '%s', b'0');" %(patient_details["NHSNumber"], patient_details["DoctorID"], patient_details["FirstName"], patient_details["Surname"], patient_details["DoB"], patient_details["Email"], patient_details["Address"],))
         self.mydb.commit()
 
     def find_used_NHS_numbers(self):

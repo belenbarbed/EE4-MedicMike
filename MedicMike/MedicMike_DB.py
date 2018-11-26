@@ -26,7 +26,7 @@ class MedicMikeDB:
         patient_record = self.__create_patient_record(data)
         prescription = data.Prescription_Info
         NHSNumber = self.__add_new_patient_to_database(patient_record)
-        self.mike_db.add_new_prescription(prescription)
+        self.mike_db.add_new_prescription(NHSNumber, prescription)
         self.__find_and_publish_medicine_info(NHSNumber)
 
     def __find_and_publish_medicine_info(self, patient_NHS_number):
@@ -40,7 +40,8 @@ class MedicMikeDB:
             patient_record["NHSNumber"] = NHSNumber
         else:
             NHSNumber = patient_record["NHSNumber"]
-        self.mike_db.add_patient_to_database(patient_record)
+        if(self.mike_db.find_patient_name(NHSNumber) == False):
+            self.mike_db.add_patient_to_database(patient_record)
         return NHSNumber
 
     # In a real implementation this number would be looked up. As we don't have access to the NHS
