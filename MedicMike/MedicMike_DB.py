@@ -65,6 +65,16 @@ class MedicMikeDB:
         patient_record["Discount"] = data.Discount
         return patient_record
 
+    def __create_prescription(self, data):
+        prescription = Prescription_message()
+        prescription.MedicineName = data[1][1]
+        prescription.Dose = data[1][2]
+        prescription.TimesPerDay = int(data[1][3])
+        prescription.StartDate = data[1][4]
+        prescription.Duration = int(data[1][5])
+        prescription.RepeatPrescription = data[1][6]
+        return prescription
+
     def __retrieve_medicine_from_database(self, patient_NHS_number):
         medicine_info = self.mike_db.find_medicine_info(patient_NHS_number)
         return medicine_info
@@ -88,8 +98,7 @@ class MedicMikeDB:
         while(True):
             mail_requests = self.mike_email.check_for_new_mail()
             for email in mail_requests: # Iterate through all emails and add new prescriptions to database
-                time.sleep(1) # TODO: Add new prescrios to database
-
+                self.mike_db.add_new_prescription(int(email[1][0]), self.__create_prescription(email))
             time.sleep(60)      # Wait 1 minute before trying again
 
 # Create instance and run email and alert in seperate threads

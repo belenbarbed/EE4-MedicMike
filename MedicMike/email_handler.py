@@ -10,7 +10,7 @@ from email.mime.text import MIMEText
 
 class EmailHandler:
     def __init__(self):
-        self.gmail_user = 'PostBotPat@gmail.com'
+        self.gmail_user = 'medicmike6969@gmail.com'
         self.gmail_password = 'Baxter2018'
 
     def __connect_to_smtp_server(self):
@@ -36,10 +36,14 @@ class EmailHandler:
                 for response_part in data:
                     if isinstance(response_part, tuple):
                         msg = email.message_from_string(response_part[1])
-                        print(msg.get_payload(0))
-                        prescription_information = re.findall(r"Patient NHS Number: ?([0-9]+)\nMedicine Name: ?([a-zA-Z]+)\nDose: ?([0-9]+[a-z]*)\nTimes Per Day: ?([0-9]+)\nStart Date: ?([0-9]{4}-[0-9]{2}-[0-9]{2})\nDuration: ?([0-9]+)\nRepeat Prescription\(Y\/N\): ?([YyNn]{1})", msg.get_payload(0))
+                        if(msg.is_multipart()):
+                            payload = msg.get_payload()[0]
+                        else:
+                            payload= msg.get_payload()
+                        prescription_information = re.findall(r"Patient NHS Number: ?([0-9]+)[\n\r]*Medicine Name: ?([a-zA-Z]+)[\n\r]*Dose: ?([0-9]+[a-z]*)[\n\r]*Times Per Day: ?([0-9]+)[\n\r]*Start Date: ?([0-9]{4}-[0-9]{2}-[0-9]{2})[\n\r]*Duration: ?([0-9]+)[\n\r]*Repeat Prescription\(Y\/N\): ?([YyNn]{1})", response_part[1])
                         doctor_email = re.findall(r"<(.*?)>", msg['from'])
                         prescription_information.insert(0, doctor_email[0])
+                        print(prescription_information)
                         new_requests.append(prescription_information)
                 self.imap_server_ssl.store(i,'+FLAGS', '\Seen')
         return new_requests
