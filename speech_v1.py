@@ -1,9 +1,8 @@
-import spacy
-import pyaudio
-import speech_recognition as sr
+import spacy  # speech processing API
+import pyaudio # importing audio from microphone
+import speech_recognition as sr # Speech-To-Text library
 
-import pyttsx
-import pyttsx
+import pyttsx # Text-To-Speech 
 engine = pyttsx.init()
 
 nlp=spacy.load('en_core_web_sm')
@@ -59,11 +58,11 @@ if medicine_required:
     #collect audio
     audio=listen()
     paper_prescription=check_answer(expected_audio) #true if paper
-
+#else
     # stop
 
 if paper_prescription:
-    engine.say('Please place it within the frame, so I can scan the documen')  # speech production 
+    engine.say('Please place it within the frame, so I can scan the document')  # speech production 
     engine.runAndWait()
     # ** Query OCR to see if letter has been detected		
     # if letter_detected
