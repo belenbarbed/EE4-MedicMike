@@ -81,32 +81,29 @@ if paper_prescription:
     engine.runAndWait()
 
 if paper_prescription==False:
-    #check Face ID
-    if faceID == "unknown":
-        engine.say('Dont recognise you from previous times, can we register your FACE ID for the   next times?, (yes/ no)')
+    # retrieve faceID from FCR
+    if faceID:
+        engine.say('Dont recognise you from previous times, hold on while we register your FACE ID')
         engine.runAndWait()
-        #collect audio
-        audio=listen()
-	    #if audio==yes
-		# MESSAGE FR TO TAKE PICTURE
-		# QUERY FR if FACE ID has been registered
-		#engine.say('Your face ID has been registered')
-		#engine.runAndWait()
-		# MESSAGE OCR TO SCAN ID
-		# QUERY OCR if ID is valid
-                #engine.say('Your ID has been scanned successfully')
-		#engine.runAndWait()
-		# if ID matches:
-		# speech production
-		#engine.say('your drugs will be arriving shortly')
-		#engine.runAndWait()
-		# elif ID matches !=
-		#     engine.say('Your ID is invalid')
-		#     engine.runAndWait()
-		# ** QUERY OCR TO SCAN ID AGAIN
-            #else
-	        #engine.say('We wont record your face, the next times you come you will need to show your ID for verification purposes')
-    elif faceID == "known":
+	# QUERY FR if FACE ID has been registered
+	engine.say('Your face ID has been registered')
+	engine.runAndWait()
+	engine.say('Please place your ID below to verify your identity')
+	engine.runAndWait()
+        #engine.say('Your ID is being scanned')
+	#engine.runAndWait()
+	# retrive ScanComplete and ScanSuccess from OCR
+	#if ScanSuccess:
+	    #speech production
+	    #engine.say('your drugs will be arriving shortly')
+	    #engine.runAndWait()
+	#elif ScanComplete
+	    #engine.say('Try your ID again please')
+	    #engine.runAndWait()
+	#else
+	    #engine.say('Your ID is invalid')
+	    #engine.runAndWait()
+    else:
         #speech production
         engine.say('Hey, hold on for a second while we retrive your meds')
      
