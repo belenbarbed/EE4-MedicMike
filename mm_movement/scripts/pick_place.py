@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
-"""
-Baxter RSDK Inverse Kinematics Example
-"""
+'''
+Script to move a hand to a specific position and orientation
+
+run with:
+rosrun mm_movement pick_place.py -p <x y z position coordinates> -l/-r -horz/-vert
+'''
+
 import argparse
 import struct
 import sys
@@ -128,7 +132,7 @@ def main():
         
     arm_move_to_pos(args.p[0], args.p[1], args.p[2], arm, orientation)
 
-    rospy.loginfo("Finished move_hand")
+    rospy.loginfo("Finished pick_and_place")
 
 if __name__ == "__main__":
     main()
