@@ -98,7 +98,10 @@ class MedicMikeDB:
         while(True):
             mail_requests = self.mike_email.check_for_new_mail()
             for email in mail_requests: # Iterate through all emails and add new prescriptions to database
-                self.mike_db.add_new_prescription(int(email[1][0]), self.__create_prescription(email))
+                if(self.mike_db.check_doctor_email(email[0])):
+                    self.mike_db.add_new_prescription(int(email[1][0]), self.__create_prescription(email))
+                    if(self.mike_db.check_medicine_in_stock(email[1][1])):
+                        self.mike_email.send_email(find_patient_name(email[1][0]), self.mike_db.find_patient_name(email[1][0]))
             time.sleep(60)      # Wait 1 minute before trying again
 
 # Create instance and run email and alert in seperate threads

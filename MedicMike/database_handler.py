@@ -52,3 +52,15 @@ class BaxterSqlDatabase:
     def find_used_NHS_numbers(self):
         self.mycursor.execute("SELECT PatientNHSNumber FROM Patients;")
         return self.mycursor.fetchall() #Convert to list
+
+    def check_doctor_email(self, email):
+        self.mycursor.execute("SELECT COUNT(Email) FROM Doctors WHERE Email = '%s';" %(email,))
+        if(self.mycursor.fetchall()[0] > 0):
+            return True
+        return False
+
+    def check_medicine_in_stock(self, medicine_name):
+        self.mycursor.execute("SELECT Stock from Medicines WHERE MedicineName = '%s';" %(medicine_name,))
+        if(self.mycursor.fetchall()[0] > 0):
+            return True
+        return False

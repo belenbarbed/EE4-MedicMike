@@ -56,7 +56,7 @@ class EmailHandler:
         self.imap_server_ssl.logout()
         return new_requests
 
-    def send_email(self, name, email, number_packages):
+    def send_email(self, name, email):
         self.__connect_to_smtp_server()
         msg = MIMEMultipart()
         print(email)
@@ -66,11 +66,11 @@ class EmailHandler:
         body = """
         To %s,
 
-        Medicines prescribed to you are now in stock.
+        Medicines prescribed to you are in stock.
 
         Best wishes,
         Medic Mike
-        """ %(name, number_packages,)
+        """ %(name,)
 
         msg.attach(MIMEText(body, 'plain'))
         text = msg.as_string()
