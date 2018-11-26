@@ -3,7 +3,7 @@ import imaplib
 import email
 import time
 import re
-import baxter_database
+import database_handler
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -36,7 +36,8 @@ class EmailHandler:
                 for response_part in data:
                     if isinstance(response_part, tuple):
                         msg = email.message_from_string(response_part[1])
-                        prescription_information = re.findall(r"Patient NHS Number: ?([0-9]+)\nMedicine Name: ?([a-zA-Z]+)\nDose: ?([0-9]+[a-z]*)\nTimes Per Day: ?([0-9]+)\nStart Date: ?([0-9]{4}-[0-9]{2}-[0-9]{2})\nDuration: ?([0-9]+)\nRepeat Prescription\(Y\/N\): ?([YyNn]{1})"), msg.get_payload())
+                        print(msg.get_payload(0))
+                        prescription_information = re.findall(r"Patient NHS Number: ?([0-9]+)\nMedicine Name: ?([a-zA-Z]+)\nDose: ?([0-9]+[a-z]*)\nTimes Per Day: ?([0-9]+)\nStart Date: ?([0-9]{4}-[0-9]{2}-[0-9]{2})\nDuration: ?([0-9]+)\nRepeat Prescription\(Y\/N\): ?([YyNn]{1})", msg.get_payload(0))
                         doctor_email = re.findall(r"<(.*?)>", msg['from'])
                         prescription_information.insert(0, doctor_email[0])
                         new_requests.append(prescription_information)

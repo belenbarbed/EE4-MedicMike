@@ -53,7 +53,7 @@ class MedicMikeDB:
         return number
 
     def __create_patient_record(self, data):
-        patient_record{}
+        patient_record = {}
         patient_record["NHSNumber"] = data.NHSNumber
         patient_record["DoctorID"] = data.DoctorID
         patient_record["FirstName"] = data.FirstName
@@ -65,16 +65,21 @@ class MedicMikeDB:
         return patient_record
 
     def __retrieve_medicine_from_database(self, patient_NHS_number):
-        medicine_info = self.mike_db.find_medicine_info(CIDNumber)
+        medicine_info = self.mike_db.find_medicine_info(patient_NHS_number)
         return medicine_info
 
     def __publish_medicine_info(self, medicine_info, patient_name, patient_NHS_number):
-        msg = DB_output
+        msg = DB_output()
         msg.NHSNumber = patient_NHS_number
         msg.PatientName = patient_name
-        msg.MedicineName = medicine_info[0]
-        msg.Row = medicine_info[1]
-        msg.Column = medicine_info[2]
+        if(medicine_info == False):
+            msg.MedicineName = "N/A"
+            msg.Row = 0
+            msg.Column = 0
+        else:
+            msg.MedicineName = medicine_info[0]
+            msg.Row = medicine_info[1]
+            msg.Column = medicine_info[2]
         rospy.loginfo(msg)
         self.pub.publish(msg)
 
@@ -82,6 +87,7 @@ class MedicMikeDB:
         while(True):
             mail_requests = self.mike_email.check_for_new_mail()
             for email in mail_requests: # Iterate through all emails and add new prescriptions to database
+                time.sleep(1) # TODO: Add new prescrios to database
 
             time.sleep(60)      # Wait 1 minute before trying again
 

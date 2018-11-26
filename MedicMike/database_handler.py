@@ -30,8 +30,11 @@ class BaxterSqlDatabase:
         self.mydb.commit()
 
     def find_medicine_info(self, patient_NHS_number):
-        self.mycursor.execute("SELECT MedicineName, RowNumber, ColumnNumber FROM Medicines RIGHT JOIN Prescriptions ON Medicines.MedicineName = Prescriptions.MedicineName WHERE Prescriptions.PatientNHSNumber = %d AND (Prescriptions.CollectionDate IS NOT NULL OR (Prescriptions.RepeatPrescription = b'1' AND Prescriptions.CollectionDate < DATE_ADD(Prescriptions.CollectionDate, INTERVAL (Prescriptions.Duration-1) DAYS));" %(patient_NHS_number,))
-        return self.mycursor.fetchall()[0]
+        self.mycursor.execute("SELECT Medicines.MedicineName, RowNumber, ColumnNumber FROM Medicines RIGHT JOIN Prescriptions ON Medicines.MedicineName = Prescriptions.MedicineName WHERE Prescriptions.PatientNHSNumber = %d AND (Prescriptions.CollectionDate IS NOT NULL OR (Prescriptions.RepeatPrescription = b'1' AND CURDATE() > DATE_ADD(Prescriptions.CollectionDate, INTERVAL (Prescriptions.Duration-1) DAY)));" %(patient_NHS_number,))
+        if(len(self.mycursor.fetchall()) > 0):
+            print self.mycursor.fetchall()[0]
+            return self.mycursor.fetchall()[0]
+        return False
 
     def update_collected_medicine(self, medicine_name, patient_NHS_number):
         Time = datetime.datetime.now()
