@@ -8,7 +8,6 @@ engine = pyttsx.init()
 nlp=spacy.load('en_core_web_sm')
 def check_semantics(answer):
     for token in answer:
-         #is the token part of a stop list, ie. most common words of the language?
         if token.pos_ == 'INTJ':
             expected_word=True
             print("Expected answer \n")
@@ -45,7 +44,7 @@ engine.runAndWait()
 
 #collect audio
 #expected_audio=listen()
-expected_audio=nlp(u"yes")  # simpler case scenario to the yes/no question. train for diff. cases
+expected_audio=nlp(u"yes"( # bypass microphone listening to troubleshoot the speech production conversation
 check_semantics(expected_audio)  # check to see if answer is semantically correct
 medicine_required=check_answer(expected_audio) # check character of answer
 
@@ -62,47 +61,45 @@ if medicine_required:
     # stop
 
 if paper_prescription:
-    engine.say('Please place it within the frame, so I can scan the document')  # speech production 
+    engine.say('Please place it within the frame, so I can scan the document')
     engine.runAndWait()
-    # ** Query OCR to see if letter has been detected		
-    # if letter_detected
-    engine.say('Hold on a second, the prescription is being scanned')  # speech production
+    # Retrieve ScanComplete and ScanSuccess from OCR to see if letter has been detected, and processed successfully	
+    # if ScanSuccess
+    engine.say('Your medicines will arrive shortly') 
     engine.runAndWait()
-    # elif
-    engine.say('Please place the prescription within the frame')
+    # elif ScanComplete
+    engine.say('Please try again, and re-position the prescription within the frame')
     engine.runAndWait()
-
-    # ** Query OCR to see if prescription drug has been recognised
-    # if scan_success  
-    engine.say('Youre prescription medicine will arrive shortly')
-    engine.runAndWait()
-    # elif
+    # else
     engine.say('Please try again')
     engine.runAndWait()
 
 if paper_prescription==False:
     # retrieve faceID from FCR
     if faceID:
-        engine.say('Dont recognise you from previous times, hold on while we register your FACE ID')
-        engine.runAndWait()
-	# QUERY FR if FACE ID has been registered
-	engine.say('Your face ID has been registered')
-	engine.runAndWait()
 	engine.say('Please place your ID below to verify your identity')
 	engine.runAndWait()
         #engine.say('Your ID is being scanned')
 	#engine.runAndWait()
 	# retrive ScanComplete and ScanSuccess from OCR
 	#if ScanSuccess:
-	    #speech production
 	    #engine.say('your drugs will be arriving shortly')
 	    #engine.runAndWait()
 	#elif ScanComplete
 	    #engine.say('Try your ID again please')
 	    #engine.runAndWait()
-	#else
+	#elif
 	    #engine.say('Your ID is invalid')
 	    #engine.runAndWait()
+	
+	# register person-s Face ID for future visits
+        engine.say('Dont recognise you from previous times, hold on while we register your FACE ID')
+        engine.runAndWait()
+	# retrieve FaceRegistered from FR if FACE ID has been stored
+	engine.say('Your face ID has been registered, the next time you wont need your ID')
+	engine.runAndWait()
+	
+	
     else:
         #speech production
         engine.say('Hey, hold on for a second while we retrive your meds')
