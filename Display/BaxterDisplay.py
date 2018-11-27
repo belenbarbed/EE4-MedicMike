@@ -22,7 +22,7 @@ class MedicMikeFace:
         rospy.spin()
 
     def __send_image(self, path):
-#        webbrowser.open(path)
+        #webbrowser.open(path)
 
         img = cv2.imread(path)
         msg = cv_bridge.CvBridge().cv2_to_imgmsg(img, encoding="bgr8")
