@@ -16,6 +16,8 @@ import baxter_external_devices
 
 from baxter_interface import CHECK_VERSION
 
+from mm_movement.msg import EndEffectorState
+
 gripper_force = 0
 
 def force_check(data):
@@ -25,7 +27,9 @@ def get_gripper(g):
     rs = baxter_interface.RobotEnable(CHECK_VERSION)
     init_state = rs.state().enabled
     left = baxter_interface.Gripper('left', CHECK_VERSION)
+    left.calibrate
     right = baxter_interface.Gripper('right', CHECK_VERSION)
+    right.calibrate
     
     if(g == 'left'):
         return left
@@ -41,6 +45,7 @@ def offset_position(gripper, offset):
     gripper.command_position(current + offset)
     
 def gripper_action(action, arm):
+    rospy.loginfo("Moving Gripper")
     count = 0
     if(action == 'open'):
         while gripper_force > 0 and count < 20:

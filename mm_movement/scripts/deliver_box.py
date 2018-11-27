@@ -13,6 +13,7 @@ import time
 
 from pick_place import arm_move_to_pos
 from gripper import gripper_action
+from mm_movement.msg import DB_output
 
 from geometry_msgs.msg import (
     Quaternion,
@@ -29,7 +30,20 @@ def main():
     rospy.loginfo("Initializing node... ")
     rospy.init_node("deliver_box_test")
     rospy.loginfo("Initializing node... ")
-    
+
+    if(args.slot == 0):
+        # listen to topics instead
+        rospy.Subscriber("DB_Move_Channel", DB_output, pass_slot)
+        rospy.spin()
+    else:
+        # use command line args
+        deliver_box(args.slot)
+
+
+def pass_slot(data):
+    deliver_box(data.Column)
+
+def deliver_box(slot):
     vertical = Quaternion(
                     x=0.00,
                     y=0.99,
@@ -55,22 +69,22 @@ def main():
     gripper_action('open', 'left')
     arm_move_to_pos(0.47, 0.72, 0.43, 'left', waypoint)
     
-    if(args.slot == 1):
+    if(slot == 1):
         arm_move_to_pos(0.00, 1.12, 0.14, 'left', horizontal)
         arm_move_to_pos(0.00, 1.17, 0.14, 'left', horizontal)
         gripper_action('close', 'left')
         arm_move_to_pos(0.00, 1.02, 0.14, 'left', horizontal)
-    elif(args.slot == 2):
+    elif(slot == 2):
         arm_move_to_pos(0.11, 1.14, 0.14, 'left', horizontal)
         arm_move_to_pos(0.11, 1.19, 0.14, 'left', horizontal)
         gripper_action('close', 'left')
         arm_move_to_pos(0.11, 1.04, 0.14, 'left', horizontal)
-    elif(args.slot == 3):
+    elif(slot == 3):
         arm_move_to_pos(0.22, 1.15, 0.14, 'left', horizontal)
         arm_move_to_pos(0.22, 1.20, 0.14, 'left', horizontal)
         gripper_action('close', 'left')
         arm_move_to_pos(0.22, 1.04, 0.14, 'left', horizontal)
-    elif(args.slot == 4):
+    elif(slot == 4):
         arm_move_to_pos(0.31, 1.15, 0.13, 'left', horizontal)
         arm_move_to_pos(0.31, 1.20, 0.13, 'left', horizontal)
         gripper_action('close', 'left')
@@ -85,4 +99,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
