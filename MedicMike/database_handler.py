@@ -24,6 +24,13 @@ class BaxterSqlDatabase:
             return False
         return names[0][0] + " " + names[0][1]
 
+    def find_patient_email(self, patient_NHS_number):
+        self.mycursor.execute("SELECT Email FROM Patients WHERE PatientNHSNumber = %d;" %(patient_NHS_number,))
+        email = self.mycursor.fetchall()
+        if(len(email) == 0):
+            return false
+        return email[0]
+
     def add_new_prescription(self, patient_NHS_number, prescription_information):
         if(prescription_information.RepeatPrescription == 'Y' or prescription_information.RepeatPrescription == 'y'):
             self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', %d, '%s', %d, b'1', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, prescription_information.TimesPerDay, prescription_information.StartDate, prescription_information.Duration,))
