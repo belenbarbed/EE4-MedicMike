@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import sys
-import ros
 sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-import face_recognition
-import pickle
-import cv2
-from ../MessageFiles/FR_message import IdentificationOut
+import face_recognition, ros, pickle, cv2
+from medic_mike.msg import DB_output
+from medic_mike.msg import FR_message
+from medic_mike.msg import Collect_message
 from os import listdir
 
 class FacialRecognition:
@@ -19,10 +18,24 @@ class FacialRecognition:
         self.known_face_encodings = []
         self.known_face_names = []
         self.arrived = []
-        self.pub = rospy.Publisher("DBChannel_In", IdentificationOut, queue_size=10)
+        rospy.init_node('FacialRecognition', anonymous=True)
+        rospy.Subscriber("Collected_Channel", Collect_message, self.__Collectcallback)
+        rospy.Subscriber("DB_Move_Channel", DB_output, self.__DBcallback)
+        self.pub = rospy.Publisher("FR_DB_Channel", FR_message, queue_size=10)
 
     def pickup_listener(self):
         rospy.spin()
+
+    def __DBcallback(self, data):
+        row = data.row
+        col = data.col
+        patient_NHS_number = str(data.NHSNumber)
+        if row == 0 and col == 0:
+            self.arrived.remove(patient_NHS_number)
+
+    def __Collectcallback(self, data):
+        patient_NHS_number = str(data.NHSNumber)
+        self.arrived.remove(patient_NHS_number)
 
     def face_rec_learn(self):
         images = listdir("known_people")
@@ -94,12 +107,12 @@ class FacialRecognition:
                 seen = 0
             prev_name = name
             if seen >= 2 and name not in self.arrived:
-                msg = IdentificationOut()
-                msg.NHSNumber(uint32(name))
+                FR_msg = IdentificationOut()
+                FR_msg.NHSNumber(uint32(name))
                 print(name)
                 self.arrived.append(name)
-                rospy.loginfo(msg)
-                self.pub.publish(msg)
+                rospy.loginfo(FR_msg)
+                self.pub.publish(FR_msg)
                 not_seen = 0
                 print_name = True
             elif seen == 0:
@@ -130,7 +143,7 @@ class FacialRecognition:
                 break
         self.video_capture.release()
 
-        def hand
-
+FaceRec = FacialRecognition()
+FaceRec.recogniseFace()
     # Release handle to the webcam
     # cv2.destroyAllWindows()
