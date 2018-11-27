@@ -13,6 +13,7 @@ class MedicMikeDB:
         rospy.init_node('Database', anonymous=True)
         rospy.Subscriber("FR_DB_Channel", FR_message, self.__FRcallback)
         rospy.Subscriber("OCR_DB_Channel", OCR_message, self.__OCRcallback)
+        rospy.Subscriber("Collected_Channel", Collect_message, self.__Collectcallback)
         self.pub = rospy.Publisher("DB_Move_Channel", DB_output, queue_size=10)
 
     def alert_listener(self):
@@ -28,6 +29,9 @@ class MedicMikeDB:
         NHSNumber = self.__add_new_patient_to_database(patient_record)
         self.mike_db.add_new_prescription(NHSNumber, prescription)
         self.__find_and_publish_medicine_info(NHSNumber)
+
+    def __Collectcallback(self, data):
+        self.mike_db.update_medicine_collection(data)
 
     def __find_and_publish_medicine_info(self, patient_NHS_number):
         medicine_info = self.__retrieve_medicine_from_database(patient_NHS_number)
@@ -87,10 +91,14 @@ class MedicMikeDB:
             msg.MedicineName = "N/A"
             msg.Row = 0
             msg.Column = 0
+        elif(medicine_info[1] == 0):
+            msg.MedicineName = "Out Of Stock"
+            msg.Row = 0
+            msg.Column = 0
         else:
             msg.MedicineName = medicine_info[0]
-            msg.Row = medicine_info[1]
-            msg.Column = medicine_info[2]
+            msg.Row = medicine_info[2]
+            msg.Column = medicine_info[3]
         rospy.loginfo(msg)
         self.pub.publish(msg)
 

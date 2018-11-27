@@ -39,7 +39,7 @@ class BaxterSqlDatabase:
         self.mydb.commit()
 
     def find_medicine_info(self, patient_NHS_number):
-        self.mycursor.execute("SELECT Medicines.MedicineName, RowNumber, ColumnNumber FROM Medicines RIGHT JOIN Prescriptions ON Medicines.MedicineName = Prescriptions.MedicineName WHERE Prescriptions.PatientNHSNumber = %d AND (Prescriptions.CollectionDate IS NULL OR (Prescriptions.RepeatPrescription = b'1' AND CURDATE() > DATE_ADD(Prescriptions.CollectionDate, INTERVAL (Prescriptions.Duration-1) DAY)));" %(patient_NHS_number,))
+        self.mycursor.execute("SELECT Medicines.MedicineName, Medicines.Stock, RowNumber, ColumnNumber FROM Medicines RIGHT JOIN Prescriptions ON Medicines.MedicineName = Prescriptions.MedicineName WHERE Prescriptions.PatientNHSNumber = %d AND (Prescriptions.CollectionDate IS NULL OR (Prescriptions.RepeatPrescription = b'1' AND CURDATE() > DATE_ADD(Prescriptions.CollectionDate, INTERVAL (Prescriptions.Duration-1) DAY)));" %(patient_NHS_number,))
         result = self.mycursor.fetchall()
         if(len(result) > 0):
             return result[0]
@@ -71,3 +71,7 @@ class BaxterSqlDatabase:
         if(self.mycursor.fetchall()[0] > 0):
             return True
         return False
+
+    def update_medicine_collection(self, data):
+        self.mycursor.execute("UPDATE Prescriptions SET CollectionDate = CURDATE() WHERE MedicineName = '%s' AND PatientNHSNumber = %d;" %(data.MedicineName, int(data.NHSNumber), ))
+        self.mycursor.execute("UPDATE Medicines SET Stock = Stock - 1 WHERE MedicineName = '%s' AND Stock > 0;" %(data.MedicineName, ))
