@@ -1,0 +1,1 @@
+g++ -std=c++11 -ggdb Pipeline1.cpp -o pipeline -llept -ltesseract `pkg-config --cflags --libs lept tesseract opencv`  
