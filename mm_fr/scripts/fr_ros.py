@@ -1,19 +1,21 @@
 #!/usr/bin/env python
 
 import sys
-sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-import face_recognition, ros, pickle, cv2
-from medic_mike.msg import DB_output
-from medic_mike.msg import FR_message
-from medic_mike.msg import Collect_message
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+import face_recognition, rospy, pickle, cv2, os
+import numpy as np
+from mm_fr.msg import DB_output
+from mm_fr.msg import FR_message
+from mm_fr.msg import Collect_message
 from os import listdir
 
 class FacialRecognition:
 
 
     def __init__(self):
-        self.face_name_file = 'face_name.pkl'
-        self.face_enc_file = 'face_enc.pkl'
+        self.file_loc = os.path.dirname(__file__)
+        self.face_name_file = self.file_loc + '/face_name'
+        self.face_enc_file = self.file_loc + '/face_enc'
         self.video_capture = cv2.VideoCapture(0)
         self.known_face_encodings = []
         self.known_face_names = []
@@ -42,27 +44,23 @@ class FacialRecognition:
         # print(images)
         for filename in images:
             self.known_face_names.append(filename.split('.')[0])
-            filename = 'known_people/' + filename
+            filename = self.file_loc + '/known_people/' + filename
             image_file = face_recognition.load_image_file(filename)
             enc_face = face_recognition.face_encodings(image_file)
             print(image_file.shape)
             self.known_face_encodings.append(enc_face[0])
-        with open(self.face_name_file, "wb") as fp:
-            pickle.dump(self.known_face_names, fp)
-        with open(self.face_enc_file, "wb") as fp:
-            pickle.dump(self.known_face_encodings, fp)
+        np.save(self.face_name_file, self.known_face_names)
+        np.save(self.face_enc_file, self.known_face_encodings)
 
     
 
     # Create arrays of known face encodings and their names
     def recogniseFace(self):
-        with open(self.face_name_file, "rb") as fp:
-            self.known_face_names = pickle.load(fp)
-        if len(self.known_face_names) != len(listdir("known_people")):
-            face_rec_learn()
+        self.known_face_names = np.load(self.face_name_file+'.npy').tolist()
+        if len(self.known_face_names) != len(listdir(self.file_loc + "/known_people")):
+            self.face_rec_learn()
         else:
-            with open(self.face_enc_file, "rb") as fp:
-                self.known_face_encodings = pickle.load(fp)
+            self.known_face_encodings = np.load(self.face_enc_file+'.npy').tolist()
     # Initialize some variables
         face_locations = []
         face_encodings = []
@@ -91,12 +89,12 @@ class FacialRecognition:
                 name = "Unknown"
                 for face_encoding in face_encodings:
                     # See if the face is a match for the known face(s)
-                    matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+                    matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
 
                     # If a match was found in known_face_encodings, just use the first one.
                     if True in matches:
                         first_match_index = matches.index(True)
-                        name = known_face_names[first_match_index]
+                        name = self.known_face_names[first_match_index]
 
                     # face_names.append(name)
             if name != "Unknown" and prev_name == name:
@@ -107,11 +105,11 @@ class FacialRecognition:
                 seen = 0
             prev_name = name
             if seen >= 2 and name not in self.arrived:
-                FR_msg = IdentificationOut()
-                FR_msg.NHSNumber(uint32(name))
+                FR_msg = FR_message()
+                FR_msg.NHSNumber = long(name)
                 print(name)
                 self.arrived.append(name)
-                rospy.loginfo(FR_msg)
+                rospy.loginfo(name + ' recognised')
                 self.pub.publish(FR_msg)
                 not_seen = 0
                 print_name = True
