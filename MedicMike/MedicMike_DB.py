@@ -5,6 +5,7 @@ from medic_mike.msg import DB_output
 from medic_mike.msg import FR_message
 from medic_mike.msg import OCR_message
 from medic_mike.msg import Prescription_message
+from medic_mike.msg import Collect_message
 
 class MedicMikeDB:
     def __init__(self):
