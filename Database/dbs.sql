@@ -24,63 +24,126 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `Baxter` /*!40100 DEFAULT CHARACTER SET
 USE `Baxter`;
 
 --
--- Table structure for table `packages`
+-- Table structure for table `Doctors`
 --
 
-DROP TABLE IF EXISTS `packages`;
+DROP TABLE IF EXISTS `Doctors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `packages` (
-  `PackageID` int(11) NOT NULL AUTO_INCREMENT,
-  `CollegeID` int(11) DEFAULT NULL,
+CREATE TABLE `Doctors` (
+  `DoctorID` int(11) NOT NULL,
+  `FirstName` varchar(255) DEFAULT NULL,
+  `Surname` varchar(255) NOT NULL,
+  `Email` varchar(255) DEFAULT NULL,
   `Address` varchar(255) DEFAULT NULL,
-  `ParcelLocation` int(11) DEFAULT NULL,
-  `ArrivalDate` date DEFAULT NULL,
-  `ArrivalTime` time DEFAULT NULL,
-  `Notified` bit(1) DEFAULT b'0',
-  `CollectionDate` date DEFAULT NULL,
-  `CollectionTime` time DEFAULT NULL,
-  PRIMARY KEY (`PackageID`),
-  KEY `CollegeID` (`CollegeID`),
-  CONSTRAINT `packages_ibfk_1` FOREIGN KEY (`CollegeID`) REFERENCES `users` (`CollegeID`)
+  PRIMARY KEY (`DoctorID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `packages`
+-- Dumping data for table `Doctors`
 --
 
-LOCK TABLES `packages` WRITE;
-/*!40000 ALTER TABLE `packages` DISABLE KEYS */;
-/*!40000 ALTER TABLE `packages` ENABLE KEYS */;
+LOCK TABLES `Doctors` WRITE;
+/*!40000 ALTER TABLE `Doctors` DISABLE KEYS */;
+INSERT INTO `Doctors` VALUES (1,'Enzo','Lam','owen.harcombe15@imperial.ac.uk','40 Princes Gardens, Knightsbridge, London SW7 2PD');
+/*!40000 ALTER TABLE `Doctors` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `users`
+-- Table structure for table `Medicines`
 --
 
-DROP TABLE IF EXISTS `users`;
+DROP TABLE IF EXISTS `Medicines`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `users` (
-  `CollegeID` int(11) NOT NULL,
-  `CollegeCardID` varchar(255) DEFAULT NULL,
-  `FirstName` varchar(255) DEFAULT NULL,
-  `Surname` varchar(255) DEFAULT NULL,
-  `Email` varchar(255) DEFAULT NULL,
-  `Department` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`CollegeID`)
+CREATE TABLE `Medicines` (
+  `MedicineNumber` int(11) NOT NULL,
+  `MedicineName` varchar(255) NOT NULL,
+  `DosePerBox` int(11) DEFAULT NULL,
+  `Stock` int(11) DEFAULT NULL,
+  `RowNumber` int(11) DEFAULT NULL,
+  `ColumnNumber` int(11) DEFAULT NULL,
+  `Notes` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`MedicineName`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `users`
+-- Dumping data for table `Medicines`
 --
 
-LOCK TABLES `users` WRITE;
-/*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1087764,NULL,'Owen','Harcombe','oh1015@ic.ac.uk','EEE'),(1088571,NULL,'George','Padley','gp2015@ic.ac.uk','EEE');
-/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+LOCK TABLES `Medicines` WRITE;
+/*!40000 ALTER TABLE `Medicines` DISABLE KEYS */;
+INSERT INTO `Medicines` VALUES (2,'Amoxicillin',14,10,1,2,''),(3,'Bonus Marks',5,100,1,3,''),(3,'Ketamine',10,3,1,4,''),(1,'Paracetamol',8,20,1,1,'');
+/*!40000 ALTER TABLE `Medicines` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `Patients`
+--
+
+DROP TABLE IF EXISTS `Patients`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Patients` (
+  `PatientNHSNumber` int(11) NOT NULL,
+  `DoctorID` int(11) NOT NULL,
+  `FirstName` varchar(255) DEFAULT NULL,
+  `Surname` varchar(255) NOT NULL,
+  `DoB` date DEFAULT NULL,
+  `Email` varchar(255) DEFAULT NULL,
+  `Address` varchar(255) DEFAULT NULL,
+  `PrescriptionDiscount` bit(1) DEFAULT b'0',
+  PRIMARY KEY (`PatientNHSNumber`),
+  KEY `DoctorID` (`DoctorID`),
+  CONSTRAINT `Patients_ibfk_1` FOREIGN KEY (`DoctorID`) REFERENCES `Doctors` (`DoctorID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Patients`
+--
+
+LOCK TABLES `Patients` WRITE;
+/*!40000 ALTER TABLE `Patients` DISABLE KEYS */;
+INSERT INTO `Patients` VALUES (1,1,'Owen','Harcombe','1996-10-24','owen.harcombe@gmail.com','123 Fake Street, Newtown, Westshire, WE53 5HE',_binary '\0'),(2,1,'Joe','Bloggs','2000-01-01','Joe.Bloggs@gmail.com','321 Fake Street',_binary '\0'),(3,1,'John','Smith','1990-01-01','John.Smith@gmail.com','31 Fake Street',_binary '\0'),(1088571,1,'George','Padley','1996-11-16','george.padley15@imperial.ac.uk','Level 5 Labs',_binary '');
+/*!40000 ALTER TABLE `Patients` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `Prescriptions`
+--
+
+DROP TABLE IF EXISTS `Prescriptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Prescriptions` (
+  `PrescriptionNumber` int(11) NOT NULL AUTO_INCREMENT,
+  `PatientNHSNumber` int(11) NOT NULL,
+  `MedicineName` varchar(255) DEFAULT NULL,
+  `Dose` varchar(255) DEFAULT NULL,
+  `TimesPerDay` int(11) DEFAULT NULL,
+  `StartDate` date DEFAULT NULL,
+  `Duration` int(11) DEFAULT NULL,
+  `RepeatPrescription` bit(1) DEFAULT b'0',
+  `CollectionDate` datetime DEFAULT NULL,
+  PRIMARY KEY (`PrescriptionNumber`),
+  KEY `PatientNHSNumber` (`PatientNHSNumber`),
+  KEY `MedicineName` (`MedicineName`),
+  CONSTRAINT `Prescriptions_ibfk_1` FOREIGN KEY (`PatientNHSNumber`) REFERENCES `Patients` (`PatientNHSNumber`),
+  CONSTRAINT `Prescriptions_ibfk_2` FOREIGN KEY (`MedicineName`) REFERENCES `Medicines` (`MedicineName`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `Prescriptions`
+--
+
+LOCK TABLES `Prescriptions` WRITE;
+/*!40000 ALTER TABLE `Prescriptions` DISABLE KEYS */;
+INSERT INTO `Prescriptions` VALUES (11,3,'Paracetamol','100mg',3,'2018-11-27',5,_binary '\0',NULL),(13,2,'Amoxicillin','125mg',3,'2018-11-28',5,_binary '\0',NULL),(14,1,'Paracetamol','125mg',3,'2018-11-28',5,_binary '\0',NULL),(15,1,'Paracetamol','125mg',3,'2018-11-28',5,_binary '\0',NULL),(16,1,'Paracetamol','125mg',3,'2018-11-28',5,_binary '\0',NULL),(17,1,'Paracetamol','125mg',3,'2018-11-28',5,_binary '\0',NULL),(18,1,'Paracetamol','125mg',3,'2018-11-28',5,_binary '\0',NULL),(20,1088571,'Bonus Marks','5g',4,'2018-11-27',5,_binary '',NULL);
+/*!40000 ALTER TABLE `Prescriptions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -405,7 +468,7 @@ CREATE TABLE `innodb_index_stats` (
 
 LOCK TABLES `innodb_index_stats` WRITE;
 /*!40000 ALTER TABLE `innodb_index_stats` DISABLE KEYS */;
-INSERT INTO `innodb_index_stats` VALUES ('Baxter','packages','CollegeID','2018-11-06 17:14:43','n_diff_pfx01',0,1,'CollegeID'),('Baxter','packages','CollegeID','2018-11-06 17:14:43','n_diff_pfx02',0,1,'CollegeID,PackageID'),('Baxter','packages','CollegeID','2018-11-06 17:14:43','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','packages','CollegeID','2018-11-06 17:14:43','size',1,NULL,'Number of pages in the index'),('Baxter','packages','PRIMARY','2018-11-06 17:14:43','n_diff_pfx01',0,1,'PackageID'),('Baxter','packages','PRIMARY','2018-11-06 17:14:43','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','packages','PRIMARY','2018-11-06 17:14:43','size',1,NULL,'Number of pages in the index'),('Baxter','users','PRIMARY','2018-11-06 17:08:29','n_diff_pfx01',0,1,'CollegeID'),('Baxter','users','PRIMARY','2018-11-06 17:08:29','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','users','PRIMARY','2018-11-06 17:08:29','size',1,NULL,'Number of pages in the index'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx01',0,1,'source_uuid'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx02',0,1,'source_uuid,interval_start'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','size',1,NULL,'Number of pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_diff_pfx01',6,1,'variable'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','size',1,NULL,'Number of pages in the index');
+INSERT INTO `innodb_index_stats` VALUES ('Baxter','Doctors','PRIMARY','2018-11-18 13:58:20','n_diff_pfx01',0,1,'DoctorID'),('Baxter','Doctors','PRIMARY','2018-11-18 13:58:20','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','Doctors','PRIMARY','2018-11-18 13:58:20','size',1,NULL,'Number of pages in the index'),('Baxter','Medicines','PRIMARY','2018-11-27 14:24:36','n_diff_pfx01',4,1,'MedicineName'),('Baxter','Medicines','PRIMARY','2018-11-27 14:24:36','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','Medicines','PRIMARY','2018-11-27 14:24:36','size',1,NULL,'Number of pages in the index'),('Baxter','Patients','DoctorID','2018-11-26 12:15:18','n_diff_pfx01',1,1,'DoctorID'),('Baxter','Patients','DoctorID','2018-11-26 12:15:18','n_diff_pfx02',3,1,'DoctorID,PatientNHSNumber'),('Baxter','Patients','DoctorID','2018-11-26 12:15:18','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','Patients','DoctorID','2018-11-26 12:15:18','size',1,NULL,'Number of pages in the index'),('Baxter','Patients','PRIMARY','2018-11-26 12:15:18','n_diff_pfx01',3,1,'PatientNHSNumber'),('Baxter','Patients','PRIMARY','2018-11-26 12:15:18','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','Patients','PRIMARY','2018-11-26 12:15:18','size',1,NULL,'Number of pages in the index'),('Baxter','Prescriptions','MedicineName','2018-11-27 14:24:51','n_diff_pfx01',3,1,'MedicineName'),('Baxter','Prescriptions','MedicineName','2018-11-27 14:24:51','n_diff_pfx02',8,1,'MedicineName,PrescriptionNumber'),('Baxter','Prescriptions','MedicineName','2018-11-27 14:24:51','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','Prescriptions','MedicineName','2018-11-27 14:24:51','size',1,NULL,'Number of pages in the index'),('Baxter','Prescriptions','PRIMARY','2018-11-27 14:24:51','n_diff_pfx01',8,1,'PrescriptionNumber'),('Baxter','Prescriptions','PRIMARY','2018-11-27 14:24:51','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','Prescriptions','PRIMARY','2018-11-27 14:24:51','size',1,NULL,'Number of pages in the index'),('Baxter','Prescriptions','PatientNHSNumber','2018-11-27 14:24:51','n_diff_pfx01',4,1,'PatientNHSNumber'),('Baxter','Prescriptions','PatientNHSNumber','2018-11-27 14:24:51','n_diff_pfx02',8,1,'PatientNHSNumber,PrescriptionNumber'),('Baxter','Prescriptions','PatientNHSNumber','2018-11-27 14:24:51','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('Baxter','Prescriptions','PatientNHSNumber','2018-11-27 14:24:51','size',1,NULL,'Number of pages in the index'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx01',0,1,'source_uuid'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_diff_pfx02',0,1,'source_uuid,interval_start'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('mysql','gtid_executed','PRIMARY','2018-11-01 14:40:49','size',1,NULL,'Number of pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_diff_pfx01',6,1,'variable'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','n_leaf_pages',1,NULL,'Number of leaf pages in the index'),('sys','sys_config','PRIMARY','2018-11-01 14:40:50','size',1,NULL,'Number of pages in the index');
 /*!40000 ALTER TABLE `innodb_index_stats` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -433,7 +496,7 @@ CREATE TABLE `innodb_table_stats` (
 
 LOCK TABLES `innodb_table_stats` WRITE;
 /*!40000 ALTER TABLE `innodb_table_stats` DISABLE KEYS */;
-INSERT INTO `innodb_table_stats` VALUES ('Baxter','packages','2018-11-06 17:14:43',0,1,1),('Baxter','users','2018-11-06 17:08:29',0,1,0),('mysql','gtid_executed','2018-11-01 14:40:49',0,1,0),('sys','sys_config','2018-11-01 14:40:50',6,1,0);
+INSERT INTO `innodb_table_stats` VALUES ('Baxter','Doctors','2018-11-18 13:58:20',0,1,0),('Baxter','Medicines','2018-11-27 14:24:36',4,1,0),('Baxter','Patients','2018-11-26 12:15:18',3,1,1),('Baxter','Prescriptions','2018-11-27 14:24:51',8,1,2),('mysql','gtid_executed','2018-11-01 14:40:49',0,1,0),('sys','sys_config','2018-11-01 14:40:50',6,1,0);
 /*!40000 ALTER TABLE `innodb_table_stats` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1004,4 +1067,4 @@ CREATE TABLE IF NOT EXISTS `slow_log` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-06 17:34:15
+-- Dump completed on 2018-11-27 14:26:02
