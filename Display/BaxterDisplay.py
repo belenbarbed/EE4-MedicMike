@@ -43,6 +43,9 @@ class MedicMikeFace:
 
         elif data.display == "worried":
             self.__send_image("FaceImages\worried.jpg")
+            
+        elif data.display == "confused":
+            self.__send_image("FaceImages\confused.jpg")
 
         else:
             img = Image.new('RGB', (1024, 600), color = (17, 113, 171))#(0, 27, 88)) #(73, 109, 137))
