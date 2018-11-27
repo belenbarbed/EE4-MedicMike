@@ -3,14 +3,14 @@ import imaplib
 import email
 import time
 import re
-import baxter_database
+import database_handler
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 class EmailHandler:
     def __init__(self):
-        self.gmail_user = 'PostBotPat@gmail.com'
+        self.gmail_user = 'medicmike6969@gmail.com'
         self.gmail_password = 'Baxter2018'
 
     def __connect_to_smtp_server(self):
@@ -36,9 +36,14 @@ class EmailHandler:
                 for response_part in data:
                     if isinstance(response_part, tuple):
                         msg = email.message_from_string(response_part[1])
-                        prescription_information = re.findall(r"Patient NHS Number: ?([0-9]+)\nMedicine Name: ?([a-zA-Z]+)\nDose: ?([0-9]+[a-z]*)\nTimes Per Day: ?([0-9]+)\nStart Date: ?([0-9]{4}-[0-9]{2}-[0-9]{2})\nDuration: ?([0-9]+)\nRepeat Prescription\(Y\/N\): ?([YyNn]{1})"), msg.get_payload())
+                        if(msg.is_multipart()):
+                            payload = msg.get_payload()[0]
+                        else:
+                            payload= msg.get_payload()
+                        prescription_information = re.findall(r"Patient NHS Number: ?([0-9]+)[\n\r]*Medicine Name: ?([a-zA-Z]+)[\n\r]*Dose: ?([0-9]+[a-z]*)[\n\r]*Times Per Day: ?([0-9]+)[\n\r]*Start Date: ?([0-9]{4}-[0-9]{2}-[0-9]{2})[\n\r]*Duration: ?([0-9]+)[\n\r]*Repeat Prescription\(Y\/N\): ?([YyNn]{1})", response_part[1])
                         doctor_email = re.findall(r"<(.*?)>", msg['from'])
                         prescription_information.insert(0, doctor_email[0])
+                        print(prescription_information)
                         new_requests.append(prescription_information)
                 self.imap_server_ssl.store(i,'+FLAGS', '\Seen')
         return new_requests
@@ -51,7 +56,7 @@ class EmailHandler:
         self.imap_server_ssl.logout()
         return new_requests
 
-    def send_email(self, name, email, number_packages):
+    def send_email(self, name, email):
         self.__connect_to_smtp_server()
         msg = MIMEMultipart()
         print(email)
@@ -61,11 +66,11 @@ class EmailHandler:
         body = """
         To %s,
 
-        Medicines prescribed to you are now in stock.
+        Medicines prescribed to you are in stock.
 
         Best wishes,
         Medic Mike
-        """ %(name, number_packages,)
+        """ %(name,)
 
         msg.attach(MIMEText(body, 'plain'))
         text = msg.as_string()

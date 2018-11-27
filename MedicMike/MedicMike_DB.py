@@ -13,6 +13,7 @@ class MedicMikeDB:
         rospy.init_node('Database', anonymous=True)
         rospy.Subscriber("FR_DB_Channel", FR_message, self.__FRcallback)
         rospy.Subscriber("OCR_DB_Channel", OCR_message, self.__OCRcallback)
+        rospy.Subscriber("Collected_Channel", Collect_message, self.__Collectcallback)
         self.pub = rospy.Publisher("DB_Move_Channel", DB_output, queue_size=10)
 
     def alert_listener(self):
@@ -26,8 +27,11 @@ class MedicMikeDB:
         patient_record = self.__create_patient_record(data)
         prescription = data.Prescription_Info
         NHSNumber = self.__add_new_patient_to_database(patient_record)
-        self.mike_db.add_new_prescription(prescription)
+        self.mike_db.add_new_prescription(NHSNumber, prescription)
         self.__find_and_publish_medicine_info(NHSNumber)
+
+    def __Collectcallback(self, data):
+        self.mike_db.update_medicine_collection(data)
 
     def __find_and_publish_medicine_info(self, patient_NHS_number):
         medicine_info = self.__retrieve_medicine_from_database(patient_NHS_number)
@@ -40,7 +44,8 @@ class MedicMikeDB:
             patient_record["NHSNumber"] = NHSNumber
         else:
             NHSNumber = patient_record["NHSNumber"]
-        self.mike_db.add_patient_to_database(patient_record)
+        if(self.mike_db.find_patient_name(NHSNumber) == False):
+            self.mike_db.add_patient_to_database(patient_record)
         return NHSNumber
 
     # In a real implementation this number would be looked up. As we don't have access to the NHS
@@ -53,7 +58,7 @@ class MedicMikeDB:
         return number
 
     def __create_patient_record(self, data):
-        patient_record{}
+        patient_record = {}
         patient_record["NHSNumber"] = data.NHSNumber
         patient_record["DoctorID"] = data.DoctorID
         patient_record["FirstName"] = data.FirstName
@@ -64,17 +69,36 @@ class MedicMikeDB:
         patient_record["Discount"] = data.Discount
         return patient_record
 
+    def __create_prescription(self, data):
+        prescription = Prescription_message()
+        prescription.MedicineName = data[1][1]
+        prescription.Dose = data[1][2]
+        prescription.TimesPerDay = int(data[1][3])
+        prescription.StartDate = data[1][4]
+        prescription.Duration = int(data[1][5])
+        prescription.RepeatPrescription = data[1][6]
+        return prescription
+
     def __retrieve_medicine_from_database(self, patient_NHS_number):
-        medicine_info = self.mike_db.find_medicine_info(CIDNumber)
+        medicine_info = self.mike_db.find_medicine_info(patient_NHS_number)
         return medicine_info
 
     def __publish_medicine_info(self, medicine_info, patient_name, patient_NHS_number):
-        msg = DB_output
+        msg = DB_output()
         msg.NHSNumber = patient_NHS_number
         msg.PatientName = patient_name
-        msg.MedicineName = medicine_info[0]
-        msg.Row = medicine_info[1]
-        msg.Column = medicine_info[2]
+        if(medicine_info == False):
+            msg.MedicineName = "N/A"
+            msg.Row = 0
+            msg.Column = 0
+        elif(medicine_info[1] == 0):
+            msg.MedicineName = "Out Of Stock"
+            msg.Row = 0
+            msg.Column = 0
+        else:
+            msg.MedicineName = medicine_info[0]
+            msg.Row = medicine_info[2]
+            msg.Column = medicine_info[3]
         rospy.loginfo(msg)
         self.pub.publish(msg)
 
@@ -82,7 +106,11 @@ class MedicMikeDB:
         while(True):
             mail_requests = self.mike_email.check_for_new_mail()
             for email in mail_requests: # Iterate through all emails and add new prescriptions to database
-
+                if(self.mike_db.check_doctor_email(email[0])):
+                    self.mike_db.add_new_prescription(int(email[1][0]), self.__create_prescription(email))
+                    if(self.mike_db.check_medicine_in_stock(email[1][1])):
+                        PatientNHSNumber = int(email[1][0])
+                        self.mike_email.send_email(self.mike_db.find_patient_name(PatientNHSNumber), self.mike_db.find_patient_email(PatientNHSNumber))
             time.sleep(60)      # Wait 1 minute before trying again
 
 # Create instance and run email and alert in seperate threads
