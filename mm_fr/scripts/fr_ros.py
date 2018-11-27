@@ -29,8 +29,8 @@ class FacialRecognition:
         rospy.spin()
 
     def __DBcallback(self, data):
-        row = data.row
-        col = data.col
+        row = data.Row
+        col = data.Column
         patient_NHS_number = str(data.NHSNumber)
         if row == 0 and col == 0:
             self.arrived.remove(patient_NHS_number)
