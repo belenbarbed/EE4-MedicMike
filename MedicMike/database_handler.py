@@ -29,7 +29,7 @@ class BaxterSqlDatabase:
         email = self.mycursor.fetchall()
         if(len(email) == 0):
             return false
-        return email[0]
+        return email[0][0]
 
     def add_new_prescription(self, patient_NHS_number, prescription_information):
         if(prescription_information.RepeatPrescription == 'Y' or prescription_information.RepeatPrescription == 'y'):
