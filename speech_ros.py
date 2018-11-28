@@ -15,14 +15,24 @@ nlp = spacy.load('en_core_web_sm')
 def listen():
 	r = sr.Recognizer()
 	sr.Microphone()
-	with sr.Microphone() as source:
-	    r.adjust_for_ambient_noise(source)
-	    print("Listening...")
-	    audio = r.listen(source, timeout=8)
-
-	print("Got it, you said...")
-	text = r.recognize_google(audio)
-	print(text)
+	text=''
+	while text!='yes' or text!='no'
+	    with sr.Microphone() as source:
+	         r.adjust_for_ambient_noise(source)
+	         print("Listening...")
+	         audio = r.listen(source, timeout=8)
+	    print("Got it, you said...")
+	    try:
+		text = r.recognize_google(audio)
+		print(text)
+	    except sr.UnknownValueError:
+	    	print('try again')
+		#replace with talk
+	    except sr.RequestError:
+	        print('try again')
+		#replace with talk
+	return text
+	
 
 def check_answer(answer):
         if (token.text == 'yes') or (token.text == 'Yes'):
