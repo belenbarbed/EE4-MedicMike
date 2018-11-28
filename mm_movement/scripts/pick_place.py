@@ -63,12 +63,6 @@ def get_ik(pose, limb):
 
 def arm_move_to_pos(xin,yin,zin,arm,orientationin):
     hdr = Header(stamp=rospy.Time.now(), frame_id='base')
-    quater = Quaternion(
-                    x=0.707,
-                    y=0.0,
-                    z=0.707,
-                    w=0.0,
-                )
 
     base_pose = PoseStamped(
             header=hdr,
@@ -86,7 +80,7 @@ def arm_move_to_pos(xin,yin,zin,arm,orientationin):
     arm.move_to_joint_positions(base_pos)
     print "move complete"
 
-class Point:
+class EndPoint:
     def __init__(self, x, y, z, orientation):
         self.x = x
         self.y = y
@@ -97,10 +91,12 @@ class Point:
         arm_move_to_pos(self.x, self.y, self.z, arm, self.orientation)
 
     def goToGrab(self, arm):
-        arm_move_to_pos(self.x, self.y + 0.05, self.z, arm, self.orientation)
+        yin = self.y + 0.05
+        arm_move_to_pos(self.x, yin, self.z, arm, self.orientation)
 
     def goToClear(self, arm):
-        arm_move_to_pos(self.x, self.y -0.10, self.z, arm, self.orientation)
+        yin = self.y - 0.10
+        arm_move_to_pos(self.x, yin, self.z, arm, self.orientation)
 
 def makeQuaternion(xin,yin,zin,win):
     return Quaternion(

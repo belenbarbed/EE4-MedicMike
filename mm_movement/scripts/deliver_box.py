@@ -14,7 +14,7 @@ import argparse
 import rospy
 import time
 
-from pick_place import Point, makeQuaternion
+from pick_place import EndPoint, makeQuaternion
 from gripper import gripper_action
 from mm_movement.msg import DB_output
 
@@ -28,14 +28,14 @@ wayptor = makeQuaternion(-0.40, 0.91, 0.04, 0.07)
 horizontal = makeQuaternion(0.57, -0.56, -0.45, -0.40)
 
 # Positions
-handin = Point(0.76, 0.14, 0.09, vertical)
-waypoint = Point(0.47, 0.72, 0.43, wayptor)
+handin = EndPoint(0.76, 0.14, 0.09, vertical)
+waypoint = EndPoint(0.47, 0.72, 0.43, wayptor)
 slots = [
-    Point(0, 0, 0, vertical),
-    Point(0.00, 1.12, 0.14, horizontal),
-    Point(0.11, 1.14, 0.14, horizontal),
-    Point(0.22, 1.15, 0.14, horizontal),
-    Point(0.31, 1.15, 0.13, horizontal)
+    EndPoint(0.0, 0.0, 0.0, vertical),
+    EndPoint(0.00, 1.12, 0.14, horizontal),
+    EndPoint(0.11, 1.14, 0.14, horizontal),
+    EndPoint(0.22, 1.15, 0.14, horizontal),
+    EndPoint(0.31, 1.15, 0.13, horizontal)
 ]
 
 def main():
