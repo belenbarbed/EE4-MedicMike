@@ -5,19 +5,38 @@ Script to pick medicine box from storage unit and chand it to the customer
 
 run with:
 rosrun mm_movement deliver_box.py -s <slot_number>
+or
+rosrun mm_movement deliver_box.py -s 0
+to make it listen to the DB topic
 '''
 
 import argparse
 import rospy
 import time
 
-from pick_place import arm_move_to_pos
+from pick_place import EndPoint, makeQuaternion
 from gripper import gripper_action
 from mm_movement.msg import DB_output
 
 from geometry_msgs.msg import (
     Quaternion,
 )
+
+# Orientations
+vertical = makeQuaternion(0.00, 0.99, 0.03, 0.00) 
+wayptor = makeQuaternion(-0.40, 0.91, 0.04, 0.07)         
+horizontal = makeQuaternion(0.57, -0.56, -0.45, -0.40)
+
+# Positions
+handin = EndPoint(0.76, 0.14, 0.09, vertical)
+waypoint = EndPoint(0.47, 0.72, 0.43, wayptor)
+slots = [
+    EndPoint(0.0, 0.0, 0.0, vertical),
+    EndPoint(0.00, 1.12, 0.14, horizontal),
+    EndPoint(0.11, 1.14, 0.14, horizontal),
+    EndPoint(0.22, 1.15, 0.14, horizontal),
+    EndPoint(0.31, 1.15, 0.13, horizontal)
+]
 
 def main():
     parser = argparse.ArgumentParser(description='Deliver medicine from storage slot')
@@ -28,7 +47,7 @@ def main():
     args = parser.parse_args()
 
     rospy.loginfo("Initializing node... ")
-    rospy.init_node("deliver_box_test")
+    rospy.init_node("deliver_box")
     rospy.loginfo("Initializing node... ")
 
     if(args.slot == 0):
@@ -39,63 +58,30 @@ def main():
         # use command line args
         deliver_box(args.slot)
 
-
 def pass_slot(data):
+    if(data.Column == 0):
+        # no prescription of user in sight
+        return
     deliver_box(data.Column)
 
 def deliver_box(slot):
-    vertical = Quaternion(
-                    x=0.00,
-                    y=0.99,
-                    z=0.03,
-                    w=0.00,
-                )
-                
-    waypoint = Quaternion(
-                    x=-0.40,
-                    y=0.91,
-                    z=0.04,
-                    w=0.07,
-                )
-                
-    horizontal = Quaternion(
-                    x=0.57,
-                    y=-0.56,
-                    z=-0.45,
-                    w=-0.40,
-                )
-
-    arm_move_to_pos(0.76, 0.14, 0.09, 'left', vertical)
+    handin.goTo('left')
     gripper_action('open', 'left')
-    arm_move_to_pos(0.47, 0.72, 0.43, 'left', waypoint)
+    waypoint.goTo('left')
     
-    if(slot == 1):
-        arm_move_to_pos(0.00, 1.12, 0.14, 'left', horizontal)
-        arm_move_to_pos(0.00, 1.17, 0.14, 'left', horizontal)
-        gripper_action('close', 'left')
-        arm_move_to_pos(0.00, 1.02, 0.14, 'left', horizontal)
-    elif(slot == 2):
-        arm_move_to_pos(0.11, 1.14, 0.14, 'left', horizontal)
-        arm_move_to_pos(0.11, 1.19, 0.14, 'left', horizontal)
-        gripper_action('close', 'left')
-        arm_move_to_pos(0.11, 1.04, 0.14, 'left', horizontal)
-    elif(slot == 3):
-        arm_move_to_pos(0.22, 1.15, 0.14, 'left', horizontal)
-        arm_move_to_pos(0.22, 1.20, 0.14, 'left', horizontal)
-        gripper_action('close', 'left')
-        arm_move_to_pos(0.22, 1.04, 0.14, 'left', horizontal)
-    elif(slot == 4):
-        arm_move_to_pos(0.31, 1.15, 0.13, 'left', horizontal)
-        arm_move_to_pos(0.31, 1.20, 0.13, 'left', horizontal)
-        gripper_action('close', 'left')
-        arm_move_to_pos(0.31, 1.05, 0.13, 'left', horizontal)
+    slots[slot].goTo('left')
+    slots[slot].goToGrab('left')
+    gripper_action('close', 'left')
+    slots[slot].goToClear('left')
         
-    arm_move_to_pos(0.47, 0.72, 0.43, 'left', waypoint)
-    arm_move_to_pos(0.76, 0.14, 0.09, 'left', vertical)
+    waypoint.goTo('left')
+    handin.goTo('left')
     time.sleep(2)
     gripper_action('open', 'left')
+
+    # TODO: publish to topic confirming delivery of prescription to user
     
-    rospy.loginfo("Finished gripper_action")
+    rospy.loginfo("Finished deliver_box")
 
 if __name__ == "__main__":
     main()

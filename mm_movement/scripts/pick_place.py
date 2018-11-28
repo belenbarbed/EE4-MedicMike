@@ -63,12 +63,6 @@ def get_ik(pose, limb):
 
 def arm_move_to_pos(xin,yin,zin,arm,orientationin):
     hdr = Header(stamp=rospy.Time.now(), frame_id='base')
-    quater = Quaternion(
-                    x=0.707,
-                    y=0.0,
-                    z=0.707,
-                    w=0.0,
-                )
 
     base_pose = PoseStamped(
             header=hdr,
@@ -86,11 +80,33 @@ def arm_move_to_pos(xin,yin,zin,arm,orientationin):
     arm.move_to_joint_positions(base_pos)
     print "move complete"
 
+class EndPoint:
+    def __init__(self, x, y, z, orientation):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.orientation = orientation
+
+    def goTo(self, arm):
+        arm_move_to_pos(self.x, self.y, self.z, arm, self.orientation)
+
+    def goToGrab(self, arm):
+        yin = self.y + 0.05
+        arm_move_to_pos(self.x, yin, self.z, arm, self.orientation)
+
+    def goToClear(self, arm):
+        yin = self.y - 0.10
+        arm_move_to_pos(self.x, yin, self.z, arm, self.orientation)
+
+def makeQuaternion(xin,yin,zin,win):
+    return Quaternion(
+                x=xin,
+                y=yin,
+                z=zin,
+                w=win,
+            )
+
 def main():
-
-    # EXAMPLE CALL
-    # rosrun tom_code move_hand.py -p 0.76 0.14 0.09 -left -vert
-
     parser = argparse.ArgumentParser(description='Process the x y z coordinates')
 
     parser.add_argument('-p', type=float, nargs='+',
@@ -109,26 +125,16 @@ def main():
     args = parser.parse_args()
 
     rospy.loginfo("Initializing node... ")
-    rospy.init_node("pick_and_place")
+    rospy.init_node("pick_place")
     rospy.loginfo("Initializing node... ")
 
     arm = 'left'
-    orientation = Quaternion(
-                    x = 0.57,
-                    y = -0.56,
-                    z = -0.45,
-                    w = -0.40,
-                )
+    orientation = makeQuaternion(0.57, -0.56, -0.45, -0.40)
 
     if(args.right):
         arm = 'right'
     if(args.vertical):
-        orientation = Quaternion(
-                    x=0.00,
-                    y=0.99,
-                    z=0.03,
-                    w=0.00,
-                )
+        orientation = makeQuaternion(0.00, 0.99, 0.03, 0.00)
         
     arm_move_to_pos(args.p[0], args.p[1], args.p[2], arm, orientation)
 
