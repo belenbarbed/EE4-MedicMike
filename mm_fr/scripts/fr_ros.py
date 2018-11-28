@@ -2,15 +2,20 @@
 
 import sys
 # sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
-import face_recognition, rospy, pickle, cv2, os
+import face_recognition
+import rospy
+import pickle
+import cv2
+import os
+import time
 import numpy as np
 from mm_fr.msg import DB_output
 from mm_fr.msg import FR_message
 from mm_fr.msg import Collect_message
 from os import listdir
 
-class FacialRecognition:
 
+class FacialRecognition:
 
     def __init__(self):
         self.file_loc = os.path.dirname(__file__)
@@ -20,8 +25,10 @@ class FacialRecognition:
         self.known_face_encodings = []
         self.known_face_names = []
         self.arrived = []
+        self.unknownHandled = True
         rospy.init_node('FacialRecognition', anonymous=True)
-        rospy.Subscriber("Collected_Channel", Collect_message, self.__Collectcallback)
+        rospy.Subscriber("Collected_Channel", Collect_message,
+                         self.__Collectcallback)
         rospy.Subscriber("DB_Move_Channel", DB_output, self.__DBcallback)
         self.pub = rospy.Publisher("FR_DB_Channel", FR_message, queue_size=10)
 
@@ -32,12 +39,16 @@ class FacialRecognition:
         row = data.Row
         col = data.Column
         patient_NHS_number = str(data.NHSNumber)
-        if row == 0 and col == 0:
-            self.arrived.remove(patient_NHS_number)
+        # if row == 0 and col == 0 and patient_NHS_number != "0":
+        #     self.arrived.remove(patient_NHS_number)
 
     def __Collectcallback(self, data):
         patient_NHS_number = str(data.NHSNumber)
-        self.arrived.remove(patient_NHS_number)
+        if patient_NHS_number == "0":
+            self.unknownHandled = False
+        else:
+            self.arrived.remove(patient_NHS_number)
+        time.sleep(5)
 
     def face_rec_learn(self):
         images = listdir("known_people")
@@ -52,23 +63,22 @@ class FacialRecognition:
         np.save(self.face_name_file, self.known_face_names)
         np.save(self.face_enc_file, self.known_face_encodings)
 
-    
-
     # Create arrays of known face encodings and their names
     def recogniseFace(self):
         self.known_face_names = np.load(self.face_name_file+'.npy').tolist()
         if len(self.known_face_names) != len(listdir(self.file_loc + "/known_people")):
             self.face_rec_learn()
         else:
-            self.known_face_encodings = np.load(self.face_enc_file+'.npy').tolist()
+            self.known_face_encodings = np.load(
+                self.face_enc_file+'.npy').tolist()
     # Initialize some variables
         face_locations = []
         face_encodings = []
         process_this_frame = True
-        prev_name = "Unknown"
+        prev_name = "0"
         seen = 0
         not_seen = 0
-        print_name = False
+        unknown = False
         while True:
             # Grab a single frame of video
             ret, frame = self.video_capture.read()
@@ -82,14 +92,17 @@ class FacialRecognition:
             # Only process every other frame of video to save time
             if process_this_frame:
                 # Find all the faces and face encodings in the current frame of video
-                face_locations = face_recognition.face_locations(rgb_small_frame)
-                face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
+                face_locations = face_recognition.face_locations(
+                    rgb_small_frame)
+                face_encodings = face_recognition.face_encodings(
+                    rgb_small_frame, face_locations)
 
                 # face_names = []
-                name = "Unknown"
                 for face_encoding in face_encodings:
+                    name = "0"
                     # See if the face is a match for the known face(s)
-                    matches = face_recognition.compare_faces(self.known_face_encodings, face_encoding)
+                    matches = face_recognition.compare_faces(
+                        self.known_face_encodings, face_encoding)
 
                     # If a match was found in known_face_encodings, just use the first one.
                     if True in matches:
@@ -97,25 +110,30 @@ class FacialRecognition:
                         name = self.known_face_names[first_match_index]
 
                     # face_names.append(name)
-            if name != "Unknown" and prev_name == name:
-                seen += 1
-            elif prev_name == "Unknown" and not_seen < 100:
-                not_seen += 1
-            else:
-                seen = 0
-            prev_name = name
-            if seen >= 2 and name not in self.arrived:
-                FR_msg = FR_message()
-                FR_msg.NHSNumber = long(name)
-                print(name)
-                self.arrived.append(name)
-                rospy.loginfo(name + ' recognised')
-                self.pub.publish(FR_msg)
-                not_seen = 0
-                print_name = True
-            elif seen == 0:
-                print_name = False
-                
+                    if prev_name == name and name == "0":
+                        not_seen += 1
+                    elif prev_name == name:
+                        seen += 1
+                        unknown = False
+                    if not_seen > 3:
+                        unknown = True
+                        seen = 0
+                    prev_name = name
+                    if (seen >= 2 or unknown == True) and self.arrived == []:
+                        unknown == False
+                        FR_msg = FR_message()
+                        FR_msg.NHSNumber = long(name)
+                        self.arrived.append(name)
+                        rospy.loginfo(name + ' recognised')
+                        self.pub.publish(FR_msg)
+                        not_seen = 0
+                    # elif seen == 0 and "0" not in self.arrived and unknown == True:
+                    #     FR_msg = FR_message()
+                    #     FR_msg.NHSNumber = long(name)
+                    #     self.arrived.append(name)
+                    #     rospy.loginfo('Unknown face recognised')
+                    #     self.pub.publish(FR_msg)
+
             process_this_frame = not process_this_frame
 
             # Display the results
@@ -137,11 +155,12 @@ class FacialRecognition:
             # Display the resulting image
 
             # Hit 'q' on the keyboard to quit!
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
         self.video_capture.release()
+
 
 FaceRec = FacialRecognition()
 FaceRec.recogniseFace()
-    # Release handle to the webcam
-    # cv2.destroyAllWindows()
+# Release handle to the webcam
+# cv2.destroyAllWindows()
