@@ -155,8 +155,8 @@ class FacialRecognition:
             # Display the resulting image
 
             # Hit 'q' on the keyboard to quit!
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            # if cv2.waitKey(1) & 0xFF == ord('q'):
+            #     break
         self.video_capture.release()
 
 
