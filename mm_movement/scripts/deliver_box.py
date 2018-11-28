@@ -16,7 +16,7 @@ import time
 
 from pick_place import EndPoint, makeQuaternion
 from gripper import gripper_action
-from mm_movement.msg import DB_output
+from mm_movement.msg import DB_output, Collect_message
 
 from geometry_msgs.msg import (
     Quaternion,
@@ -62,9 +62,9 @@ def pass_slot(data):
     if(data.Column == 0):
         # no prescription of user in sight
         return
-    deliver_box(data.Column)
+    deliver_box(data.Column, data.NHSNumber, data.MedicineName)
 
-def deliver_box(slot):
+def deliver_box(slot, NHSNumber=0, MedicineName=''):
     handin.goTo('left')
     gripper_action('open', 'left')
     waypoint.goTo('left')
@@ -79,7 +79,13 @@ def deliver_box(slot):
     time.sleep(2)
     gripper_action('open', 'left')
 
-    # TODO: publish to topic confirming delivery of prescription to user
+    # publish to topic confirming delivery of prescription to user
+    if(NHSNumber != 0 and MedicineName != ''):
+        pub = rospy.Publisher("Collected_Channel", Collect_message, latch=True)
+        msg = Collect_message()
+        msg.NHSNumber = NHSNumber
+        msg.MedicineName = MedicineName
+        pub.publish(msg)
     
     rospy.loginfo("Finished deliver_box")
 
