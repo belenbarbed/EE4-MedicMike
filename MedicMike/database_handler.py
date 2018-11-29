@@ -32,11 +32,16 @@ class BaxterSqlDatabase:
         return email[0][0]
 
     def add_new_prescription(self, patient_NHS_number, prescription_information):
-        if(prescription_information.RepeatPrescription == 'Y' or prescription_information.RepeatPrescription == 'y'):
-            self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', %d, '%s', %d, b'1', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, prescription_information.TimesPerDay, prescription_information.StartDate, prescription_information.Duration,))
-        else:
-            self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', %d, '%s', %d, b'0', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, prescription_information.TimesPerDay, prescription_information.StartDate, prescription_information.Duration,))
-        self.mydb.commit()
+        try:
+            if(prescription_information.RepeatPrescription == 'Y' or prescription_information.RepeatPrescription == 'y'):
+                self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', '%s', '%s', '%s', b'1', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, int(prescription_information.TimesPerDay), prescription_information.StartDate, int(prescription_information.Duration),))
+            else:
+                self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', '%s', '%s', '%s', b'0', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, int(prescription_information.TimesPerDay), prescription_information.StartDate, int(prescription_information.Duration),))
+            self.mydb.commit()
+        except Exception as e:
+            print("Couldn't add prescription to database")
+            raise
+
 
     def find_medicine_info(self, patient_NHS_number):
         self.mycursor.execute("SELECT Medicines.MedicineName, Medicines.Stock, RowNumber, ColumnNumber FROM Medicines RIGHT JOIN Prescriptions ON Medicines.MedicineName = Prescriptions.MedicineName WHERE Prescriptions.PatientNHSNumber = %d AND (Prescriptions.CollectionDate IS NULL OR (Prescriptions.RepeatPrescription = b'1' AND CURDATE() > DATE_ADD(Prescriptions.CollectionDate, INTERVAL (Prescriptions.Duration-1) DAY)));" %(patient_NHS_number,))
