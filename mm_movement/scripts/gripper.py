@@ -48,11 +48,13 @@ def gripper_action(action, arm):
     rospy.loginfo("Moving Gripper")
     count = 0
     if(action == 'open'):
-        while gripper_force > 0 and count < 20:
+        while count < 20:
+            rospy.loginfo("Opening Gripper One Step...")
             offset_position(get_gripper(arm), 15.0)
             count = count + 1
     elif(action == 'close'):
         while gripper_force < 10 and count < 20:
+            rospy.loginfo("Closing Gripper One Step...")
             offset_position(get_gripper(arm), -15.0)
             count = count + 1
 
