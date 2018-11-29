@@ -24,17 +24,23 @@ def talk(phrase):
 	os.system("mpg321 speech.mp3")
 
 def listen():
-	r = sr.Recognizer()
-	sr.Microphone()
-	with sr.Microphone() as source:
+    r=sr.Recognizer()
+    sr.Microphone()
+    text=''
+    while text!='no' and text!='yes':
+        with sr.Microphone() as source:
 	    r.adjust_for_ambient_noise(source)
 	    print("Listening...")
-	    audio = r.listen(source, timeout=8)
-
+	    audio = r.listen(source, timeout=15)
 	print("Got it, you said...")
-	text = r.recognize_google(audio)
-	print(text)
-	return text
+	try:
+	    text=r.recognize_google(audio)
+	    print(text)
+	except sr.UnknownValueError:
+	    talk('try again')
+	except sr.RequestError:
+	    talk('try again')
+    return audio
 
 def check_answer(token):
 	if (token == 'yes') or (token == 'Yes'):
