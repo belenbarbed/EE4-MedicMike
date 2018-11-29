@@ -52,6 +52,7 @@ find_package(catkin REQUIRED COMPONENTS
    FILES
    EndEffectorState.msg
    DB_output.msg
+   Collect_message.msg
  )
 
 ## Generate services in the 'srv' folder

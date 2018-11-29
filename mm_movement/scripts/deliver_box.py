@@ -15,7 +15,7 @@ import rospy
 import time
 
 from pick_place import EndPoint, makeQuaternion
-from gripper import gripper_action
+from gripper import gripper_action, init_gripper
 from mm_movement.msg import DB_output, Collect_message
 
 from geometry_msgs.msg import (
@@ -49,6 +49,8 @@ def main():
     rospy.loginfo("Initializing node... ")
     rospy.init_node("deliver_box")
     rospy.loginfo("Initializing node... ")
+
+    init_gripper()
 
     if(args.slot == 0):
         # listen to topics instead
