@@ -46,8 +46,8 @@ class BaxterSqlDatabase:
         return False
 
     def update_collected_medicine(self, medicine_name, patient_NHS_number):
-        Time = datetime.datetime.now()
-        self.mycursor.execute("UPDATE Prescriptions SET CollectionDate = '%s' WHERE MedicineName = '%s' and PatientNHSNumber = %d;" %(Time, medicine_name, patient_NHS_number,))
+        Date = datetime.datetime.now().isoformat()
+        self.mycursor.execute("UPDATE Prescriptions SET CollectionDate = '%s' WHERE MedicineName = '%s' and PatientNHSNumber = %d;" %(Date, medicine_name, patient_NHS_number,))
 
     def add_patient_to_database(self, patient_details):
         if(patient_details["Discount"] == 'Y' or patient_details["Discount"] == 'y'):
@@ -75,3 +75,4 @@ class BaxterSqlDatabase:
     def update_medicine_collection(self, data):
         self.mycursor.execute("UPDATE Prescriptions SET CollectionDate = CURDATE() WHERE MedicineName = '%s' AND PatientNHSNumber = %d;" %(data.MedicineName, int(data.NHSNumber), ))
         self.mycursor.execute("UPDATE Medicines SET Stock = Stock - 1 WHERE MedicineName = '%s' AND Stock > 0;" %(data.MedicineName, ))
+        self.mydb.commit()

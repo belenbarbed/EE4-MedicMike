@@ -33,7 +33,9 @@ class MedicMikeDB:
         self.__find_and_publish_medicine_info(NHSNumber)
 
     def __Collectcallback(self, data):
+        print("Updating")
         self.mike_db.update_medicine_collection(data)
+        print("Updated")
 
     def __find_and_publish_medicine_info(self, patient_NHS_number):
         medicine_info = self.__retrieve_medicine_from_database(patient_NHS_number)
