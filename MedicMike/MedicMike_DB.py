@@ -22,7 +22,8 @@ class MedicMikeDB:
 
     def __FRcallback(self, data):
         patient_NHS_number = data.NHSNumber
-        self.__find_and_publish_medicine_info(patient_NHS_number)
+        if(patient_NHS_number != 0):
+            self.__find_and_publish_medicine_info(patient_NHS_number)
 
     def __OCRcallback(self, data):
         patient_record = self.__create_patient_record(data)
