@@ -26,11 +26,15 @@ class MedicMikeDB:
             self.__find_and_publish_medicine_info(patient_NHS_number)
 
     def __OCRcallback(self, data):
-        patient_record = self.__create_patient_record(data)
-        prescription = data.Prescription_Info
-        NHSNumber = self.__add_new_patient_to_database(patient_record)
-        self.mike_db.add_new_prescription(NHSNumber, prescription)
-        self.__find_and_publish_medicine_info(NHSNumber)
+        try:
+            patient_record = self.__create_patient_record(data)
+            prescription = data.Prescription_Info
+            NHSNumber = self.__add_new_patient_to_database(patient_record)
+            self.mike_db.add_new_prescription(NHSNumber, prescription)
+            self.__find_and_publish_medicine_info(NHSNumber)
+        except Exception as e:
+            print("Couldn't add patient information.")
+
 
     def __Collectcallback(self, data):
         print("Updating")
@@ -63,15 +67,23 @@ class MedicMikeDB:
 
     def __create_patient_record(self, data):
         patient_record = {}
-        patient_record["NHSNumber"] = data.NHSNumber
-        patient_record["DoctorID"] = data.DoctorID
-        patient_record["FirstName"] = data.FirstName
-        patient_record["Surname"] = data.Surname
-        patient_record["DoB"] = data.DoB
-        patient_record["Email"] = data.Email
-        patient_record["Address"] = data.Address
-        patient_record["Discount"] = data.Discount
-        return patient_record
+        try:
+            patient_record["NHSNumber"] = int(data.NHSNumber)
+            try:
+                patient_record["DoctorID"] = int(data.DoctorID)
+                patient_record["FirstName"] = data.FirstName
+                patient_record["Surname"] = data.Surname
+                patient_record["DoB"] = data.DoB
+                patient_record["Email"] = data.Email
+                patient_record["Address"] = data.Address
+                patient_record["Discount"] = data.Discount
+                return patient_record
+            except Exception as e:
+                print("Error converting Doctor ID to an Int!")
+                raise
+        except Exception as e:
+            print("Error converting NHSNumber to an Int!")
+            raise
 
     def __create_prescription(self, data):
         prescription = Prescription_message()

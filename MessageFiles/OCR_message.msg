@@ -1,5 +1,5 @@
-uint32 NHSNumber
-uint32 DoctorID
+string NHSNumber
+string DoctorID
 string FirstName
 string Surname
 time DoB
