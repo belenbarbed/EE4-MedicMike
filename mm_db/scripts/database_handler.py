@@ -75,3 +75,4 @@ class BaxterSqlDatabase:
     def update_medicine_collection(self, data):
         self.mycursor.execute("UPDATE Prescriptions SET CollectionDate = CURDATE() WHERE MedicineName = '%s' AND PatientNHSNumber = %d;" %(data.MedicineName, int(data.NHSNumber), ))
         self.mycursor.execute("UPDATE Medicines SET Stock = Stock - 1 WHERE MedicineName = '%s' AND Stock > 0;" %(data.MedicineName, ))
+        self.mydb.commit()

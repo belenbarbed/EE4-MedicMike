@@ -45,10 +45,10 @@ def offset_position(gripper, offset):
         capability_warning(gripper, 'command_position')
         return
     current = gripper.position()
-    rospy.loginfo("Current Position: " + str(gripper.position()))
-    rospy.loginfo("Current Offset: " + str(offset))
+    #rospy.loginfo("Current Position: " + str(gripper.position()))
+    #rospy.loginfo("Current Offset: " + str(offset))
     gripper.command_position(current + offset)
-    rospy.loginfo("Gripper Moved to Position: " + str(gripper.position()))
+    #rospy.loginfo("Gripper Moved to Position: " + str(gripper.position()))
     
 def gripper_action(action, arm):
     rospy.loginfo("Moving Gripper")
