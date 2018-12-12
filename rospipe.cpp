@@ -12,24 +12,26 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
+#include "src/msg/OCR_message.h"
+#include "src/msg/SPR_message.h"
+
 #include <iostream>
 #include <sstream> // To build the message string in ros
 #include <regex>
-#include 
 
 using namespace cv;
 using namespace cv::dnn;
 using namespace cv::text;
 
-constexpr int INPWIDTH = 320;
-constexpr int INPHEIGHT = 320;
+constexpr int INPWIDTH = 1024;
+constexpr int INPHEIGHT = 1024;
 constexpr float CONFTHRESHOLD = 0.5f;
 constexpr float NMSTHRESHOLD = 0.4f;
 
 constexpr uint32_t MAX_FRAMES = 100;
 
-constexpr std::string OCR_NO_FRAME_ERROR = "OCR_NO_CAMERA_INPUT_ERROR";
-constexpr std::string OCR_NO_MATCH_ERROR = "OCR_NO_MATCHED_STRING" 
+constexpr char OCR_NO_FRAME_ERROR[] = "OCR_NO_CAMERA_INPUT_ERROR";
+constexpr char OCR_NO_MATCH_ERROR[] = "OCR_NO_MATCHED_STRING"; 
 
 // Global to be access across callbacks
 VideoCapture vidcap;
@@ -51,7 +53,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "ocr");
 
     // Start the subscriber to wait for the callback from the speech recognizer
-    ros::Subscriber sub_OcrWait = nodeHandler.subscribe("SPR_OCR_Channel", 100, performOcrCallback(capture));
+    ros::Subscriber sub_OcrWait = nodeHandler.subscribe("SPR_OCR_Channel", 100, confirmStartOcrCallback);
 
     return 0;
 }
@@ -59,12 +61,13 @@ int main(int argc, char **argv)
 void confirmStartOcrCallback(const std_msgs::String::ConstPtr& msg)
 {
 
-    std::string ocr_ResultString;
+    std::vector<string> ocr_ResultString;
     std::stringstream ss;
-    std_msgs:: String rosmsg;
+    msg::OCR_message msg;
+    msg::SPR_message checkMessage;
 
     // Check the subscribed topic string, if confirmation exists then enter the OCR routine
-    std::string checkString = static_cast<std::string>(msg->data.c_str());
+    std::string checkString = static_cast<std::string>(checkMessage->Scan);
 
     // Start a publisher
     ros::Publisher pub_OcrExecute = nodeHandler.advertise<std_msgs::String>("OCR_DB_Channel", 100);
@@ -73,28 +76,53 @@ void confirmStartOcrCallback(const std_msgs::String::ConstPtr& msg)
     if(checkString == "START_OCR")
     {
         ocr_ResultString = performOcr();
-        // Publish the result string
-        ss << ocr_ResultString;
-        rosmsg.data = ss.str();
+        // Format the results
+
+        std::string temp = ocr_ResultString.find(0)->second;
+
+        if(temp == "OK")
+        {
+            ss << ocr_ResultString.find(1)->second;
+            msg.NHSNumber = ss.str();
+            // Clear the string
+            ss.str(std::string);
+            ss.clear();
+            ss << ocr_ResultString.find(2)->second;
+            msg.FirstName = ss.str();
+            // Clear the string
+            ss.str(std::string);
+            ss.clear();
+            ss << ocr_ResultString.find(3)->second;
+            msg.Surname = ss.str();
+            // Clear the string
+            ss.str(std::string);
+            ss.clear();
+            ss << ocr_ResultString.find(4)->second;
+            msg.Prescription = ss.str();
+        }
+        else
+        {
+            ss << OCR_NO_MATCH_ERROR;
+            msg.NHSNumber = ss.str();
+        }
+
         // Check if the ROS system is ok to publish
         if(ros::ok())
         {
-            pub_OcrExecute.publish(rosmsg);
+            pub_OcrExecute.publish(msg);
             ros::spinOnce();
         }
-
-    }
-    else
-    {
 
     }
 
 }
 
-std::string performOcr()
+std::map<int,string> performOcr()
 {
     String model = static_cast<String>("frozen_east_text_detection.pb");
     Net net;
+
+    std::vector<std::string> resultStrings;
 
     // Check if the model exists
     CV_Assert(!model.empty());
@@ -114,7 +142,7 @@ std::string performOcr()
 
     Mat frame, blob, temp;
 
-    for(int framecount = 0; framecount < MAXFRAMES; ++framecount)
+    for(int framecount = 0; framecount < MAX_FRAMES; ++framecount)
     {
         vidcap >> frame;
         if (frame.empty())
@@ -145,7 +173,6 @@ std::string performOcr()
         Mat rotationMatrix, rotatedImage, initialCroppedImage, finalCroppedImage;
         float angle;
         Size box_size;
-        std::vector<std::string> resultStrings;
 
         Point2f ratio((float)frame.cols / INPWIDTH, (float)frame.rows / INPHEIGHT);
 
@@ -214,29 +241,56 @@ std::string performOcr()
         }
     }
 
-
     // Regex for determining if the required string exists
-    std::regex num_regex("[0-9]{9}");
+    std::regex num_regex("[0-9]{8}"); // Follows CID number
+    std::regex firstName_regex("[1\.[a-zA-Z]"); // First name
+    std::regex lastName_regex("2\.[a-zA-Z]"); // Last name
+    std::regex medication_regex("3.\[a-zA-Z]");
 
     std::string compString;
-    std::string foundString = OCR_NO_MATCH_ERROR;
+    std::map<int,string> foundString;
+
+    std::string num;
+    std::string firstName;
+    std::string lastName;
+    std::string medication
+
     // Iterate through the results vector to see if any of the elements match the regex
     for(std::vector<std::string>::iterator it = resultStrings.begin(); it != resultStrings.end(); ++it)
     {
         compString = *it;
-        if(std::regex_match(num_regex, compString)){
-            foundString = compString;
-            // Probably not best practice but oh well
-            return foundString;
+
+        if(std::regex_match(compString, num_regex)){
+            num = compString;
+            foundString.emplace(1,num);
         }
+        if(std::regex_match(compString, firstName_regex)){
+            num = firstName;
+            foundString.emplace(2,firstName);
+        }
+        if(std::regex_match(compString, lastName_regex)){
+            num = lastName;
+            foundString.emplace(3,lastName);
+        }
+        if(std::regex_match(compString, medication_regex)){
+            num = medication;
+            foundString.emplace(4,num);
+        }        
     }
+
+    // Check if vector full
+    if(foundString.empty)
+    {
+        foundString.emplace(0,OCR_NO_MATCH_ERROR);
+    }
+    else{
+        foundString.emplace(0,"OK");
+    }
+    
 
     return foundString;
 
 }
-
-
-
 
 
 void decode(const Mat& scores, const Mat& geometry, float scoreThresh,

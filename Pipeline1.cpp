@@ -15,8 +15,8 @@ using namespace cv;
 using namespace cv::dnn;
 using namespace cv::text;
 
-constexpr int INPWIDTH = 320;
-constexpr int INPHEIGHT = 320;
+constexpr int INPWIDTH = 640;
+constexpr int INPHEIGHT = 640;
 constexpr float CONFTHRESHOLD = 0.5f;
 constexpr float NMSTHRESHOLD = 0.4f;
 
@@ -44,11 +44,14 @@ int main()
     //vidcap.open(0); // check the index for the camera on Baxter
 
     // Open the test image:
-    vidcap.open(static_cast<String>("images/test6.jpg"));
-    //vidcap.open(0);
+    //vidcap.open(static_cast<String>("images/test6.jpg"));
+    vidcap.open(0);
+
+    vidcap.set(CV_CAP_PROP_FRAME_WIDTH,1280);
+    vidcap.set(CV_CAP_PROP_FRAME_HEIGHT,720);
 
     static const std::string kWinName = "All Rectangles";
-    namedWindow(kWinName, WINDOW_NORMAL);
+    //namedWindow(kWinName, WINDOW_NORMAL);
 
     std::vector<Mat> outs;
     std::vector<String> outNames(2);
