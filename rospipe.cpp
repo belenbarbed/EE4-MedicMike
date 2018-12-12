@@ -12,8 +12,8 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 
-#include "src/msg/OCR_message.h"
-#include "src/msg/SPR_message.h"
+#include "ocr_package/OCR_message.h"
+#include "ocr_package/SPR_message.h"
 
 #include <iostream>
 #include <sstream> // To build the message string in ros
@@ -38,7 +38,7 @@ VideoCapture vidcap;
 ros::NodeHandle nodeHandler;
 
 // Function prototypes
-std::string performOcr();
+std::map<int,std::string> performOcr();
 void confirmStartOcrCallback(const std_msgs::String::ConstPtr& msg);
 void decode(const Mat& scores, const Mat& geometry, float scoreThresh,
             std::vector<RotatedRect>& detections, std::vector<float>& confidences);
@@ -61,13 +61,13 @@ int main(int argc, char **argv)
 void confirmStartOcrCallback(const std_msgs::String::ConstPtr& msg)
 {
 
-    std::vector<string> ocr_ResultString;
+    std::map<int,std::string> ocr_ResultString;
     std::stringstream ss;
-    msg::OCR_message msg;
-    msg::SPR_message checkMessage;
+    ocr_package::OCR_message ocr_msg;
+    ocr_package::SPR_message checkMessage;
 
     // Check the subscribed topic string, if confirmation exists then enter the OCR routine
-    std::string checkString = static_cast<std::string>(checkMessage->Scan);
+    std::string checkString = static_cast<std::string>(checkMessage.Scan);
 
     // Start a publisher
     ros::Publisher pub_OcrExecute = nodeHandler.advertise<std_msgs::String>("OCR_DB_Channel", 100);
@@ -83,33 +83,33 @@ void confirmStartOcrCallback(const std_msgs::String::ConstPtr& msg)
         if(temp == "OK")
         {
             ss << ocr_ResultString.find(1)->second;
-            msg.NHSNumber = ss.str();
+            ocr_msg.NHSNumber = ss.str();
             // Clear the string
-            ss.str(std::string);
+            ss.str(std::string());
             ss.clear();
             ss << ocr_ResultString.find(2)->second;
-            msg.FirstName = ss.str();
+            ocr_msg.FirstName = ss.str();
             // Clear the string
-            ss.str(std::string);
+            ss.str(std::string());
             ss.clear();
             ss << ocr_ResultString.find(3)->second;
-            msg.Surname = ss.str();
+            ocr_msg.Surname = ss.str();
             // Clear the string
-            ss.str(std::string);
+            ss.str(std::string());
             ss.clear();
             ss << ocr_ResultString.find(4)->second;
-            msg.Prescription = ss.str();
+            ocr_msg.Prescription = ss.str();
         }
         else
         {
-            ss << OCR_NO_MATCH_ERROR;
-            msg.NHSNumber = ss.str();
+            ss << temp;
+            ocr_msg.NHSNumber = ss.str();
         }
 
         // Check if the ROS system is ok to publish
         if(ros::ok())
         {
-            pub_OcrExecute.publish(msg);
+            pub_OcrExecute.publish(ocr_msg);
             ros::spinOnce();
         }
 
@@ -117,12 +117,13 @@ void confirmStartOcrCallback(const std_msgs::String::ConstPtr& msg)
 
 }
 
-std::map<int,string> performOcr()
+std::map<int,std::string> performOcr()
 {
     String model = static_cast<String>("frozen_east_text_detection.pb");
     Net net;
 
     std::vector<std::string> resultStrings;
+    std::map<int,std::string> foundString;
 
     // Check if the model exists
     CV_Assert(!model.empty());
@@ -148,7 +149,8 @@ std::map<int,string> performOcr()
         if (frame.empty())
         {
             // Publish an empty message
-            return OCR_NO_FRAME_ERROR;
+            foundString.emplace(0,OCR_NO_FRAME_ERROR);
+            return foundString;
         }
 
         blobFromImage(frame, blob, 1.0, Size(INPWIDTH, INPHEIGHT), Scalar(123.68, 116.78, 103.94), true, false);
@@ -243,17 +245,16 @@ std::map<int,string> performOcr()
 
     // Regex for determining if the required string exists
     std::regex num_regex("[0-9]{8}"); // Follows CID number
-    std::regex firstName_regex("[1\.[a-zA-Z]"); // First name
-    std::regex lastName_regex("2\.[a-zA-Z]"); // Last name
-    std::regex medication_regex("3.\[a-zA-Z]");
+    std::regex firstName_regex("[1\\.[a-zA-Z]"); // First name
+    std::regex lastName_regex("2\\.[a-zA-Z]"); // Last name
+    std::regex medication_regex("3\\.[a-zA-Z]");
 
     std::string compString;
-    std::map<int,string> foundString;
 
     std::string num;
     std::string firstName;
     std::string lastName;
-    std::string medication
+    std::string medication;
 
     // Iterate through the results vector to see if any of the elements match the regex
     for(std::vector<std::string>::iterator it = resultStrings.begin(); it != resultStrings.end(); ++it)
@@ -279,7 +280,7 @@ std::map<int,string> performOcr()
     }
 
     // Check if vector full
-    if(foundString.empty)
+    if(foundString.empty())
     {
         foundString.emplace(0,OCR_NO_MATCH_ERROR);
     }
