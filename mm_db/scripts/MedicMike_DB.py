@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import rospy, thread, time, random
 import email_handler, database_handler
-from medic_mike.msg import DB_output
-from medic_mike.msg import FR_message
-from medic_mike.msg import OCR_message
-from medic_mike.msg import Prescription_message
-from medic_mike.msg import Collect_message
+from mm_db.msg import DB_output
+from mm_db.msg import FR_message
+from mm_db.msg import OCR_message
+from mm_db.msg import Prescription_message
+from mm_db.msg import Collect_message
 
 class MedicMikeDB:
     def __init__(self):
@@ -22,17 +22,25 @@ class MedicMikeDB:
 
     def __FRcallback(self, data):
         patient_NHS_number = data.NHSNumber
-        self.__find_and_publish_medicine_info(patient_NHS_number)
+        if(patient_NHS_number != 0):
+            self.__find_and_publish_medicine_info(patient_NHS_number)
 
     def __OCRcallback(self, data):
-        patient_record = self.__create_patient_record(data)
-        prescription = data.Prescription_Info
-        NHSNumber = self.__add_new_patient_to_database(patient_record)
-        self.mike_db.add_new_prescription(NHSNumber, prescription)
-        self.__find_and_publish_medicine_info(NHSNumber)
+        try:
+            patient_record = self.__create_patient_record(data)
+            #prescription = data.Prescription_Info              - CHANGING MESSAGE FORMAT
+            NHSNumber = self.__add_new_patient_to_database(patient_record)
+            #self.mike_db.add_new_prescription(NHSNumber, prescription)
+            self.mike_db.add_new_prescription_string(NHSNumber, data.Prescription_Info)
+            self.__find_and_publish_medicine_info(NHSNumber)
+        except Exception as e:
+            print("Couldn't add patient information.")
+
 
     def __Collectcallback(self, data):
+        print("Updating")
         self.mike_db.update_medicine_collection(data)
+        print("Updated")
 
     def __find_and_publish_medicine_info(self, patient_NHS_number):
         medicine_info = self.__retrieve_medicine_from_database(patient_NHS_number)
@@ -60,15 +68,51 @@ class MedicMikeDB:
 
     def __create_patient_record(self, data):
         patient_record = {}
-        patient_record["NHSNumber"] = data.NHSNumber
-        patient_record["DoctorID"] = data.DoctorID
-        patient_record["FirstName"] = data.FirstName
-        patient_record["Surname"] = data.Surname
-        patient_record["DoB"] = data.DoB
-        patient_record["Email"] = data.Email
-        patient_record["Address"] = data.Address
-        patient_record["Discount"] = data.Discount
-        return patient_record
+        try:
+            patient_record["NHSNumber"] = int(data.NHSNumber)
+            try:
+                if(data.DoctorID != ""):
+                    patient_record["DoctorID"] = int(data.DoctorID)
+                else:
+                    patient_record["DoctorID"] = 1
+                    
+                if(data.FirstName != ""):
+                    patient_record["FirstName"] = data.FirstName
+                else:
+                    patient_record["FirstName"] = "Joe"
+
+                if(data.Surname):
+                    patient_record["Surname"] = data.Surname
+                else:
+                    patient_record["Surname"] = "Bloggs"
+
+                if(data.DoB != ""):
+                    patient_record["DoB"] = data.DoB
+                else:
+                    patient_record["DoB"] = "1992-10-7"
+
+                if(data.Email != ""):
+                    patient_record["Email"] = data.Email
+                else:
+                    patient_record["Email"] = "owen.harcombe@gmail.com"
+
+                if(data.Address != ""):
+                    patient_record["Address"] = data.Address
+                else:
+                    patient_record["Address"] = "EEE Building, Kensington, London, SW7 2BS"
+
+                if(data.Discount != ""):
+                    patient_record["Discount"] = data.Discount
+                else:
+                    patient_record["Discount"] = 'N'
+
+                return patient_record
+            except Exception as e:
+                print("Error converting Doctor ID to an Int!")
+                raise
+        except Exception as e:
+            print("Error converting NHSNumber to an Int!")
+            raise
 
     def __create_prescription(self, data):
         prescription = Prescription_message()

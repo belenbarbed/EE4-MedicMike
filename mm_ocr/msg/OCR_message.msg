@@ -1,0 +1,9 @@
+string NHSNumber
+string DoctorID
+string FirstName
+string Surname
+time DoB
+string Email
+string Address
+string Discount
+string Prescription

@@ -41,13 +41,15 @@ def listen():
 	    print("Listening...")
 	    audio = r.listen(source, timeout=10)
 	print("Got it, you said...")
-	try:
-	    text=r.recognize_google(audio)
-	    print(text)
-	except sr.UnknownValueError:
-	    talk('try again')
-	except sr.RequestError:
-	    talk('try again')
+	text = ""
+	while text == "":
+	    try:
+	        text=r.recognize_google(audio)
+	        print(text)
+	    except sr.UnknownValueError:
+	        talk('try again')
+	    except sr.RequestError:
+	        talk('try again')
 	return text
 
 def check_answer(text):
