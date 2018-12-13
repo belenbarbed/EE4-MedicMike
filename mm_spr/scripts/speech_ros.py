@@ -4,13 +4,12 @@ import rospy
 import spacy  # speech processing API
 import pyaudio # importing audio from microphone
 import speech_recognition as sr # Speech-To-Text library
-# import pyttsx
+import pyttsx
 from gtts import gTTS
 from mm_spr.msg import FR_message  
 from mm_spr.msg import SPR_message  
 from mm_spr.msg import Face_message  
 import os
-
 nlp = spacy.load('en_core_web_sm')
 
 def talk(phrase):
@@ -19,9 +18,18 @@ def talk(phrase):
 	# engine.setProperty('voice', 'scottish')
 	# engine.say(phrase)
 	# engine.runAndWait()
-	tts = gTTS(text=phrase, lang='en')
-	tts.save("speech.mp3")
-	os.system("mpg321 speech.mp3")
+	# tts = gTTS(text=phrase, lang='en')
+	# tts.save("speech.mp3")
+	# os.system("mpg321 speech.mp3")
+	try:
+		tts = gTTS(text=phrase, lang='en')
+		tts.save("speech.mp3")
+		os.system("mpg321 speech.mp3")
+	except:
+		rospy.loginfo('Failed GTTS')
+		engine = pyttsx.init()
+		engine.say(phrase)
+		engine.runAndWait()
 
 def listen():
     r=sr.Recognizer()
@@ -31,19 +39,21 @@ def listen():
         with sr.Microphone() as source:
 	    r.adjust_for_ambient_noise(source)
 	    print("Listening...")
-	    audio = r.listen(source, timeout=15)
+	    audio = r.listen(source, timeout=10)
 	print("Got it, you said...")
-	try:
-	    text=r.recognize_google(audio)
-	    print(text)
-	except sr.UnknownValueError:
-	    talk('try again')
-	except sr.RequestError:
-	    talk('try again')
-    return audio
+	text = ""
+	while text == "":
+	    try:
+	        text=r.recognize_google(audio)
+	        print(text)
+	    except sr.UnknownValueError:
+	        talk('try again')
+	    except sr.RequestError:
+	        talk('try again')
+	return text
 
-def check_answer(token):
-	if (token == 'yes') or (token == 'Yes'):
+def check_answer(text):
+	if (text == 'yes') or (text == 'Yes'):
 		answer=True
 		return answer
 	else:
@@ -71,6 +81,7 @@ def interact(data):
 		face_pub.publish(face_msg)
 #expected_audio=nlp(u"yes")	
 		paper_prescription=check_answer(audio)
+		rospy.loginfo(str(paper_prescription))
 		if paper_prescription:
 			scan_prescription()
 #else
@@ -94,4 +105,4 @@ def main():
 	rospy.spin()
 
 if __name__ == '__main__':
-	main()
+    main()
