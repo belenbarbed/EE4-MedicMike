@@ -21,11 +21,10 @@ class FacialRecognition:
         self.file_loc = os.path.dirname(__file__)
         self.face_name_file = self.file_loc + '/face_name'
         self.face_enc_file = self.file_loc + '/face_enc'
-        self.video_capture = cv2.VideoCapture(0)
+        self.video_capture = cv2.VideoCapture(1)
         self.known_face_encodings = []
         self.known_face_names = []
         self.arrived = []
-        self.unknownHandled = True
         rospy.init_node('FacialRecognition', anonymous=True)
         rospy.Subscriber("Collected_Channel", Collect_message,
                          self.__Collectcallback)
@@ -43,11 +42,7 @@ class FacialRecognition:
         #     self.arrived.remove(patient_NHS_number)
 
     def __Collectcallback(self, data):
-        patient_NHS_number = str(data.NHSNumber)
-        if patient_NHS_number == "0":
-            self.unknownHandled = False
-        else:
-            self.arrived.remove(patient_NHS_number)
+        self.arrived = []
         time.sleep(5)
 
     def face_rec_learn(self):
@@ -90,7 +85,7 @@ class FacialRecognition:
             rgb_small_frame = small_frame[:, :, ::-1]
 
             # Only process every other frame of video to save time
-            if process_this_frame:
+            if process_this_frame and self.arrived == []:
                 # Find all the faces and face encodings in the current frame of video
                 face_locations = face_recognition.face_locations(
                     rgb_small_frame)
@@ -114,19 +109,21 @@ class FacialRecognition:
                         not_seen += 1
                     elif prev_name == name:
                         seen += 1
+                        not_seen = 0
                         unknown = False
                     if not_seen > 3:
                         unknown = True
                         seen = 0
                     prev_name = name
-                    if (seen >= 2 or unknown == True) and self.arrived == []:
-                        unknown == False
+                    if (seen >= 2 or unknown == True):
+                        unknown = False
                         FR_msg = FR_message()
                         FR_msg.NHSNumber = long(name)
                         self.arrived.append(name)
                         rospy.loginfo(name + ' recognised')
                         self.pub.publish(FR_msg)
                         not_seen = 0
+                        seen = 0
                     # elif seen == 0 and "0" not in self.arrived and unknown == True:
                     #     FR_msg = FR_message()
                     #     FR_msg.NHSNumber = long(name)

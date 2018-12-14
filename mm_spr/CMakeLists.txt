@@ -53,6 +53,7 @@ find_package(catkin REQUIRED COMPONENTS
    FR_message.msg
    Face_message.msg
    SPR_message.msg
+   OCR_message.msg
  )
 
 ## Generate services in the 'srv' folder

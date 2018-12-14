@@ -24,12 +24,14 @@ from geometry_msgs.msg import (
 
 # Orientations
 vertical = makeQuaternion(0.00, 0.99, 0.03, 0.00) 
-wayptor = makeQuaternion(-0.40, 0.91, 0.04, 0.07)         
+wayptor = makeQuaternion(0.71, 0.70, 0.03, 0.00)         
 horizontal = makeQuaternion(0.57, -0.56, -0.45, -0.40)
+outofwayor = makeQuaternion(-0.40, 0.91, 0.04, 0.07)         
 
 # Positions
-handin = EndPoint(0.76, 0.14, 0.09, vertical)
-waypoint = EndPoint(0.47, 0.72, 0.43, wayptor)
+handin = EndPoint(0.80, 0.22, -0.18, vertical)
+waypoint = EndPoint(0.21, 0.57, 0.00, wayptor)
+outofway = EndPoint(0.47, 0.72, 0.43, outofwayor)
 slots = [
     EndPoint(0.0, 0.0, 0.0, vertical),
     EndPoint(0.00, 1.12, 0.14, horizontal),
@@ -49,6 +51,9 @@ def main():
     rospy.loginfo("Initializing node... ")
     rospy.init_node("deliver_box")
     rospy.loginfo("Initializing node... ")
+    global pub 
+    pub = rospy.Publisher("Collected_Channel", Collect_message, queue_size=10)
+
 
     if(args.slot == 0):
         # listen to topics instead
@@ -65,7 +70,7 @@ def pass_slot(data):
     deliver_box(data.Column, data.NHSNumber, data.MedicineName)
 
 def deliver_box(slot, NHSNumber=0, MedicineName=''):
-    handin.goTo('left')
+    outofway.goTo('left')
     gripper_action('open', 'left')
     waypoint.goTo('left')
     
@@ -78,10 +83,12 @@ def deliver_box(slot, NHSNumber=0, MedicineName=''):
     handin.goTo('left')
     time.sleep(2)
     gripper_action('open', 'left')
+    time.sleep(2)
+    outofway.goTo('left')
 
     # publish to topic confirming delivery of prescription to user
     if(NHSNumber != 0 and MedicineName != ''):
-        pub = rospy.Publisher("Collected_Channel", Collect_message, latch=True)
+        global pub
         msg = Collect_message()
         msg.NHSNumber = NHSNumber
         msg.MedicineName = MedicineName
