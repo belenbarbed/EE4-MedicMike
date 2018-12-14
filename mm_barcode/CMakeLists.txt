@@ -50,7 +50,6 @@ find_package(catkin REQUIRED COMPONENTS
  add_message_files(
    FILES
    OCR_message.msg
-   Prescription_message.msg
  )
 
 ## Generate services in the 'srv' folder

@@ -72,7 +72,7 @@ class MedicMikeDB:
         try:
             patient_record["NHSNumber"] = int(data.NHSNumber)
             try:
-                if(data.DoctorID):
+                if(data.DoctorID != ""):
                     patient_record["DoctorID"] = int(data.DoctorID)
                 else:
                     patient_record["DoctorID"] = 1
@@ -87,7 +87,7 @@ class MedicMikeDB:
                 else:
                     patient_record["Surname"] = "Bloggs"
 
-                if(data.DoB):
+                if(data.DoB != ""):
                     patient_record["DoB"] = data.DoB
                 else:
                     patient_record["DoB"] = "1992-10-7"

@@ -40,7 +40,6 @@ class BaxterSqlDatabase:
                 self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', '%s', '%s', '%s', b'0', NULL);" %(patient_NHS_number, prescription_information.MedicineName, prescription_information.Dose, int(prescription_information.TimesPerDay), prescription_information.StartDate, int(prescription_information.Duration),))
             self.mydb.commit()
         except Exception as e:
-            print(e)
             print("Couldn't add prescription to database")
             raise
 
@@ -49,6 +48,7 @@ class BaxterSqlDatabase:
             self.mycursor.execute("INSERT INTO Prescriptions VALUES (NULL, %d, '%s', '%s', '%s', '%s', '%s', b'1', NULL);" %(patient_NHS_number, prescription_information, "125 mg", random.randint(3,5), datetime.datetime.now().isoformat(), random.randint(1,10),))
             self.mydb.commit()
         except Exception as e:
+            print(e)
             print("Couldn't add prescription to database")
             raise
 

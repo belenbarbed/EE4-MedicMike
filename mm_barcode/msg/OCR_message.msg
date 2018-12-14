@@ -1,10 +1,10 @@
-uint32 NHSNumber
-uint32 DoctorID
+string NHSNumber
+string DoctorID
 string FirstName
 string Surname
-time DoB
+string DoB
 string Email
 string Address
 string Discount
-Prescription_message Prescription_Info
+string Prescription_Info
 
